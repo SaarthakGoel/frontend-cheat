@@ -1,14 +1,19 @@
 import React, { useState } from 'react'
 import Roompop from './Roompop';
+import Roompop2 from './Roompop2';
 
 export default function Hero() {
 
-  const [pop , setPop] = useState(false);
+  const [pop1 , setPop1] = useState(false);
+  const [pop2 , setPop2] = useState(false);
 
   return (
     <div className="bg-emerald-900 min-h-screen">
       {
-        pop ? <Roompop close={setPop} /> : null
+        pop1 ? <Roompop close={setPop1} /> : null
+      }
+      {
+        pop2 ? <Roompop2 close={setPop2} /> : null
       }
       <div className='bg-emerald-900 z-10 flex gap-40 justify-center items-center fixed top-0 right-0 left-0'>
         <button className="bg-emerald-900 font-bold text-white text-xl px-10 py-4 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
@@ -24,10 +29,13 @@ export default function Hero() {
         <h1 className="text-emerald-300 text-center font-bold text-3xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mx-5 sm:mx-10 md:mx-28 lg:mx-40 my-5 absolute top-64  ">
           Bluff, Play, Conquer : Your Ultimate Card Challenge!
         </h1>
-        <div>
-          <div className="flex justify-center">
+        <div> 
+          <div className="flex flex-col gap-6 justify-center">
             <button className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
               Play Online
+            </button>
+            <button className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
+              Play Computer
             </button>
           </div>
         </div>
@@ -43,9 +51,12 @@ export default function Hero() {
           </span>
         </p>
 
-        <div className="mt-8">
-          <button onClick={() => setPop(!pop)} className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
+        <div className="mt-8 flex flex-col gap-6">
+          <button onClick={() => setPop1(!pop1)} className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
             Create Room
+          </button>
+          <button onClick={() => setPop2(!pop2)} className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
+            Join Room
           </button>
         </div>
       </div>

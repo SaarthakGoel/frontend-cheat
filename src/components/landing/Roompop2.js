@@ -4,14 +4,10 @@ import socket from '../../socket/socket';
 import { useDispatch } from 'react-redux';
 import { setState } from '../../store/roomSlice';
 
-export default function Roompop({ close }) {
-
-  console.log(socket.id)
+export default function Roompop2({ close }) {
 
   const [roomName, setRoomName] = useState('');
   const [name, setName] = useState('');
-  const [numPlayers, setNumPlayers] = useState(3);
-  const [numDecks, setNumDecks] = useState(1);
   const [roomNameError, setRoomNameError] = useState('');
   const [nameError, setNameError] = useState('');
   const [isValid, setIsValid] = useState(false);
@@ -33,35 +29,21 @@ export default function Roompop({ close }) {
     return isValid;
   };
 
-  // Update card deck options based on the number of players
-  const getDeckOptions = () => {
-    if (numPlayers === 3) return [1];
-    if (numPlayers === 4) return [1, 2];
-    if (numPlayers === 5 || numPlayers === 6) return [2];
-    return [];
-  };
-
-  const handleNumPlayersChange = (e) => {
-    const players = parseInt(e.target.value, 10);
-    setNumPlayers(players);
-    const deckOptions = getDeckOptions(players);
-    setNumDecks(deckOptions[0]);
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Room Details:', { name, roomName, numPlayers, numDecks });
-    socket.emit('createRoom' , {
+    console.log('Room Details:', { name, roomName });
+    socket.emit('joinRoom' , {
       name : name,
-      room : Number(roomName),
-      players : numPlayers,
-      decks : numDecks
+      room : roomName
     })
-    socket.on('roomAlreadyExists' , ({message}) => {
-      console.log(message);
+    socket.on('roomNotExist' , ({message}) => {
+      setError(message)
+    } )
+    socket.on('roomFullError' , ({message}) => {
       setError(message)
     })
-    socket.on('roomCreated' , () => {
+    socket.on('roomJoined', ({name , roomName , numPlayers , numDecks}) => {
       dispatch(setState({name , roomName , numPlayers , numDecks}));
       setError("");
       navigate('/custom-room')
@@ -70,12 +52,7 @@ export default function Roompop({ close }) {
 
   useEffect(() => {
     setIsValid(validateRoomName() && validateName());
-  }, [roomName, name , numPlayers , numDecks ]);
-
-  useEffect(() => {
-    if(numPlayers === 5 || numPlayers === 6)
-    setNumDecks(2)
-  },[numPlayers])
+  }, [roomName, name]);
 
   return (
     <div>
@@ -84,7 +61,7 @@ export default function Roompop({ close }) {
       <div className='z-30 fixed top-[20vh] left-[30vw] flex justify-center items-center'>
         <div className='bg-emerald-100 pb-10 w-[40vw] rounded-xl relative'>
           <img onClick={() => close(false)} src="/xmark.svg" className='absolute top-[-5px] right-[-10px] h-8 w-10' />
-          <h1 className='bg-emerald-700 rounded-t-xl text-center text-emerald-100 text-4xl font-semibold py-4'>Create Room</h1>
+          <h1 className='bg-emerald-700 rounded-t-xl text-center text-emerald-100 text-4xl font-semibold py-4'>Join Room</h1>
           <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto bg-emerald-100 rounded-b-lg">
             <div className="mb-4">
               <label htmlFor="roomName" className="block text-emerald-800 font-semibold mb-2">
@@ -117,51 +94,12 @@ export default function Roompop({ close }) {
               />
               {nameError && <p className="text-red-600 text-sm">{nameError}</p>}
             </div>
-
-            <div className="mb-4">
-              <label className="block text-emerald-800 font-semibold mb-2">Number of Players:</label>
-              <div className="flex space-x-4">
-                {[3, 4, 5, 6].map((num) => (
-                  <label key={num} className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="numPlayers"
-                      value={num}
-                      checked={numPlayers === num}
-                      onChange={handleNumPlayersChange}
-                      className="text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span className="ml-2">{num}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-emerald-800 font-semibold mb-2">Number of Card Decks:</label>
-              <div className="flex space-x-4">
-                {getDeckOptions().map((option) => (
-                  <label key={option} className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="numDecks"
-                      value={option}
-                      checked={numDecks === option}
-                      onChange={(e) => setNumDecks(parseInt(e.target.value, 10))}
-                      className="text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span className="ml-2">{option}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={!isValid}
               className={`w-full p-2 rounded-md transition ${isValid ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-gray-400 text-gray-800 cursor-not-allowed'}`}
             >
-              Create Room
+              Join Room
             </button>
             {
               error ? <p className="text-red-600">{error}</p> : null
