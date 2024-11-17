@@ -1,6 +1,6 @@
 :root{
-  --card-width : 157px;
-  --card-height : 220px;
+  --card-width : 80px;
+  --card-height : 120px;
 }
 
 .card{

@@ -44,7 +44,7 @@ export default function Roompop2({ close }) {
       setError(message)
     })
     socket.on('roomJoined', ({name , roomName , numPlayers , numDecks}) => {
-      dispatch(setState({name , roomName , numPlayers , numDecks}));
+      dispatch(setState({name , roomName , numPlayers , numDecks , host : false}));
       setError("");
       navigate('/custom-room')
     })

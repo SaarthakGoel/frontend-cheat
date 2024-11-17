@@ -62,7 +62,7 @@ export default function Roompop({ close }) {
       setError(message)
     })
     socket.on('roomCreated' , () => {
-      dispatch(setState({name , roomName , numPlayers , numDecks}));
+      dispatch(setState({name , roomName , numPlayers , numDecks , host : true}));
       setError("");
       navigate('/custom-room')
     })
