@@ -6,7 +6,8 @@ const initialState = {
   roomId : 0,
   playerNo : 0,
   decks : 0,
-  host : true
+  host : true,
+  playerNames : []
 }
 
 const roomSlice = createSlice({
@@ -27,10 +28,16 @@ const roomSlice = createSlice({
       state.host = host;
 
       console.log(JSON.stringify(state));
+    },
+    setPlayerNames : (state , action) => {
+      console.log(action.payload);
+      const {playerName} = action.payload;
+      console.log(playerName);
+      state.playerNames = playerName;
     }
   }
 })
 
-export const {setState} = roomSlice.actions;
+export const {setState , setPlayerNames} = roomSlice.actions;
 
 export default roomSlice.reducer;

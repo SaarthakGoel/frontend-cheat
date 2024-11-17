@@ -1,52 +1,102 @@
 import React, { useState } from 'react'
 import Card from '../card/card'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import socket from '../../socket/socket';
+import { setPlayerNames } from '../../store/roomSlice';
+import ReverseCard from '../reverse-card/ReverseCard';
 
-export default function CustomRoom({ numPlayers = 4 }) {
+export default function CustomRoom() {
 
+  const dispatch = useDispatch();
   const roomData = useSelector((state => state.room))
   console.log(roomData)
 
-  const [players] = useState(Array.from({ length: roomData.playerNo }, (_, i) => `Player ${i + 1}`));
-
+  const [players, setPlayers] = useState(Array.from({ length: roomData.playerNo - 1 }, (_, i) => `Player ${i + 1}`));
   const [win, setWin] = useState(false)
+
+  socket.on('playerJoined', ({ playerName }) => {
+    dispatch(setPlayerNames({ playerName }))
+    setPlayers(handleNameAssign(playerName, players))
+    console.log(playerName)
+  })
+
+  function handleNameAssign(playerNames, players) {
+    // Find the index of the global name in the playerNames array
+    const myIndex = playerNames.indexOf(roomData.name);
+
+    if (myIndex === -1) {
+      console.error('Your name is not in the list of real player names');
+      return players;
+    }
+
+    // Create an array starting from the name after your name and wrapping around
+    const orderedNames = [
+      ...playerNames.slice(myIndex + 1),
+      ...playerNames.slice(0, myIndex)
+    ];
+
+    // Replace dummy names in the players array with real names
+    const updatedPlayers = players.map((_, index) => {
+      return orderedNames[index] || players[index]; // Replace if a real name exists, otherwise keep the dummy name
+    });
+    console.log(updatedPlayers)
+    return updatedPlayers;
+  }
 
   return (
     <div>
-      <div className="flex flex-col items-center bg-emerald-600 min-h-screen p-5">
-        <div className="grid grid-cols-3 gap-8 w-full max-w-5xl">
-          {players.map((player, index) => (
-            <div className="relative bg-green-900 text-white rounded-lg shadow-md p-4 flex flex-col items-center" key={index}>
-              <div className="mb-2">
-                <img
-                  src="/avatar.svg"
-                  alt={`avatar`}
-                  className="h-12 w-12 rounded-full"
-                />
+      <div className="w-full bg-emerald-600 p-5">
+        <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
+          {players.map((player, index) => {
+            // Define specific grid positions for up to 6 players to simulate them sitting around a table
+            const playerPositions = [
+              { colStart: 1, rowStart: 3 }, // Left center
+              { colStart: 3, rowStart: 1 },  // Top-left
+              { colStart: 6, rowStart: 1 }, // Top center
+              { colStart: 9, rowStart: 1 }, // Top-right
+              { colStart: 11, rowStart: 3 }, // Right center
+            ];
+
+            return (
+              <div
+                className="col-span-2 row-span-1 relative bg-green-900 text-white rounded-lg shadow-md py-2 flex justify-center items-center"
+                style={{
+                  gridColumnStart: playerPositions[index]?.colStart,
+                  gridRowStart: playerPositions[index]?.rowStart,
+                }}
+                key={index}
+              >
+                <div className="mb-2">
+                  <img
+                    src="/avatar.svg"
+                    alt={`avatar`}
+                    className="h-12 w-12 rounded-full"
+                  />
+                </div>
+                <p className="text-lg font-semibold">{player}</p>
+                <div className='w-full flex space-x-3 absolute top-[100%]'>
+                {[...Array(13)].map((_, cardIndex) => (
+                      <ReverseCard key={cardIndex} />
+                  ))}
+                </div>
               </div>
-              <p className="text-lg font-semibold">{player}</p>
-              <div className="flex mt-2 space-x-8">
-                {/* Display a set of cards for each player */}
-                {[...Array(5)].map((_, cardIndex) => (
-                  <Card />
-                ))}
-              </div>
+
+            );
+          })}
+          <div className='col-span-2 row-span-2 relative' style={{ gridColumnStart: 6, gridRowStart: 7 }}>
+            <div className='relative'>
+              <p className='w-full text-xl text-center font-semibold text-white'>{roomData.name}</p>
+              <img src='/avatar.svg' alt='avatar' className='h-14 w-14 absolute top-[-5px] left-[-25px] rounded-full border-[3px] border-emerald-800' />
+              <p className='bg-emerald-50 min-w-80 text-center text-lg p-1'>hello</p>
             </div>
-          ))}
+            <div className='w-full flex space-x-8 absolute top-[50%]'>
+              {["2S" , "4H" , "KD"].map((item) => (
+                <Card imgSrc={item} />
+              ))}
+            </div>
+          </div>
         </div>
 
-
-        <div>
-          <div className='relative'>
-            <p className='w-full text-xl text-center font-semibold text-white'>{roomData.name}</p>
-            <img src='/avatar.svg' alt='avatar' className='h-14 w-14 absolute top-[-5px] left-[-25px] rounded-full border-[3px] border-emerald-800' />
-            <p className='bg-emerald-50 min-w-80 text-center text-lg p-1'>hello</p>
-          </div>
-          <div>
-            
-          </div>
-          
-        </div>
 
 
         {
