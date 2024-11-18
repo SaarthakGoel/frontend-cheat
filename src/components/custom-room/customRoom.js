@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Card from '../card/card'
 import { useDispatch, useSelector } from 'react-redux';
 import socket from '../../socket/socket';
@@ -18,6 +18,11 @@ export default function CustomRoom() {
     dispatch(setPlayerNames({ playerName }))
     setPlayers(handleNameAssign(playerName, players))
     console.log(playerName)
+  })
+
+  socket.on('playerLeft' , ({playerName}) => {
+    dispatch(setPlayerNames({playerName}))
+    setPlayers(handleNameAssign2(playerName , players))
   })
 
   function handleNameAssign(playerNames, players) {
@@ -40,6 +45,27 @@ export default function CustomRoom() {
       return orderedNames[index] || players[index]; // Replace if a real name exists, otherwise keep the dummy name
     });
     console.log(updatedPlayers)
+    return updatedPlayers;
+  }
+
+  function handleNameAssign2(playerNames, players) {
+    const myIndex = playerNames.indexOf(roomData.name);
+
+    if (myIndex === -1) {
+      console.error('Your name is not in the list of real player names');
+      return players;
+    }
+
+    // Create an array starting from the name after your name and wrapping around
+    const orderedNames = [
+      ...playerNames.slice(myIndex + 1),
+      ...playerNames.slice(0, myIndex)
+    ];
+
+    const updatedPlayers = players.map((_, index) => {
+      return orderedNames[index] || "Waiting"; // Replace if a real name exists, otherwise keep the dummy name
+    });
+
     return updatedPlayers;
   }
 
