@@ -1,6 +1,6 @@
 :root{
   --card-width : 80px;
-  --card-height : 120px;
+  --card-height : 110px;
 }
 
 .card{
@@ -33,9 +33,5 @@
 }
 
 .card-back{
-  transform: rotateY(180deg);
-}
-
-.card:hover .card-inner{
   transform: rotateY(180deg);
 }

@@ -16,23 +16,15 @@ const roomSlice = createSlice({
   reducers : {
     setState: (state, action) => {
       const { name,roomName, numPlayers, numDecks , host } = action.payload;
-
-      console.log(name, roomName, numPlayers, numDecks);
-
       const introom = parseInt(roomName)
-
       state.name = name;
       state.roomId = introom;
       state.playerNo = numPlayers;
       state.decks = numDecks;
       state.host = host;
-
-      console.log(JSON.stringify(state));
     },
     setPlayerNames : (state , action) => {
-      console.log(action.payload);
       const {playerName} = action.payload;
-      console.log(playerName);
       state.playerNames = playerName;
     }
   }
