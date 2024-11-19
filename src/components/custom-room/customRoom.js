@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import socket from '../../socket/socket';
 import { setPlayerNames } from '../../store/roomSlice';
 import ReverseCard from '../reverse-card/ReverseCard';
-import { setFaceChanceData, setGameData } from '../../store/gameSlice';
+import { setFaceChanceData, setGameData, setRoundOver, setSkipTurn, setThrowChanceData } from '../../store/gameSlice';
 import { cardFaces } from '../constants/cardFaces';
 
 export default function CustomRoom() {
@@ -95,6 +95,7 @@ export default function CustomRoom() {
 
   function handleFaceClick(face) {
     socket.emit('FaceChancePlayed' , {currSocketId : socket.id , currRoom : Number(roomData.roomId) , selectedCards : selectedCards , currFace : face })
+    setSelectedCards([]);
   }
 
   socket.on('FaceChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace}) => {
@@ -107,13 +108,32 @@ export default function CustomRoom() {
     socket.emit('DoubtHandler' , {})
   }
 
+
+
   function throwHandler(){
-    socket.emit('throwChance' , {});
+    socket.emit('throwChance' , {currSocketId : socket.id , currRoom : Number(roomData.roomId) , selectedCards : selectedCards});
+    setSelectedCards([]);
   }
+
+  socket.on('throwChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , won}) => {
+    dispatch(setThrowChanceData({players , turn , cardsInMiddle , cardsInLastChance , prev , won}));
+  })
+
+
 
   function skipChanceHandler(){
-
+    socket.emit('skipChance' , {currSocketId : socket.id , currRoom : Number(roomData.roomId)});
   }
+
+  socket.on('chanceSkipped' , ({turn , skip}) => {
+    dispatch(setSkipTurn({turn , skip}));
+  })
+
+  socket.on('roundOver' , ({turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}) => {
+    dispatch(setRoundOver({turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}))
+  })
+
+
 
   return (
     <div>

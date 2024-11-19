@@ -38,10 +38,33 @@ const gameSlice = createSlice({
       state.cardsInLastChance = cardsInLastChance;
       state.prev = prev;
       state.currentFace = currentFace;
+    },
+    setThrowChanceData : (state , action) => {
+      const {players , turn , cardsInMiddle , cardsInLastChance , prev , won} = action.payload;
+      state.players = players;
+      state.turn = turn;
+      state.cardsInMiddle = cardsInMiddle;
+      state.cardsInLastChance = cardsInLastChance;
+      state.prev = prev;
+      state.won = won
+    },
+    setSkipTurn : (state , action) => {
+      const {turn , skip} = action.payload;
+      state.turn = turn;
+      state.skip = skip;
+    },
+    setRoundOver : (state , action) => {
+      const {turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance} = action.payload;
+      state.turn = turn;
+      state.prev = prev;
+      state.skip = skip;
+      state.currentFace = currentFace;
+      state.cardsInMiddle = cardsInMiddle;
+      state.cardsInLastChance = cardsInLastChance;
     }
   }
 })
 
-export const {setGameData , setFaceChanceData} = gameSlice.actions;
+export const {setGameData , setFaceChanceData , setThrowChanceData , setSkipTurn , setRoundOver} = gameSlice.actions;
 
 export default gameSlice.reducer;
