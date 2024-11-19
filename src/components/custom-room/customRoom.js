@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import socket from '../../socket/socket';
 import { setPlayerNames } from '../../store/roomSlice';
 import ReverseCard from '../reverse-card/ReverseCard';
-import { setGameData } from '../../store/gameSlice';
+import { setFaceChanceData, setGameData } from '../../store/gameSlice';
+import { cardFaces } from '../constants/cardFaces';
 
 export default function CustomRoom() {
   const dispatch = useDispatch();
@@ -74,7 +75,7 @@ export default function CustomRoom() {
   }
 
   socket.on('gameStarted', ({ players, turn, skip }) => {
-    dispatch(setGameData({ players, turn, skip }));
+    dispatch(setGameData({ players, turn, skip , roomId : roomData.roomId }));
     setStarted(true);
   });
 
@@ -90,44 +91,74 @@ export default function CustomRoom() {
     }
   };
 
+
+
+  function handleFaceClick(face) {
+    socket.emit('FaceChancePlayed' , {currSocketId : socket.id , currRoom : Number(roomData.roomId) , selectedCards : selectedCards , currFace : face })
+  }
+
+  socket.on('FaceChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace}) => {
+    dispatch(setFaceChanceData({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace}));
+  })
+
+
+
+  function doubtHandler(){
+    socket.emit('DoubtHandler' , {})
+  }
+
+  function throwHandler(){
+    socket.emit('throwChance' , {});
+  }
+
+  function skipChanceHandler(){
+
+  }
+
   return (
     <div>
       <div className="w-full bg-emerald-600 p-5">
         <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
-          {players.map((player, index) => {
-            const playerPositions = [
-              { colStart: 1, rowStart: 3 },
-              { colStart: 3, rowStart: 1 },
-              { colStart: 6, rowStart: 1 },
-              { colStart: 9, rowStart: 1 },
-              { colStart: 11, rowStart: 3 },
-            ];
+          {
+            // players and thier components
+            players.map((player, index) => {
+              const playerPositions = [
+                { colStart: 1, rowStart: 3 },
+                { colStart: 3, rowStart: 1 },
+                { colStart: 6, rowStart: 1 },
+                { colStart: 9, rowStart: 1 },
+                { colStart: 11, rowStart: 3 },
+              ];
 
-            return (
-              <div
-                className="col-span-2 row-span-1 relative bg-green-900 text-white rounded-lg shadow-md py-2 flex justify-center items-center"
-                style={{
-                  gridColumnStart: playerPositions[index]?.colStart,
-                  gridRowStart: playerPositions[index]?.rowStart,
-                }}
-                key={index}
-              >
-                <div className="mb-2">
-                  <img
-                    src="/avatar.svg"
-                    alt={`avatar`}
-                    className="h-12 w-12 rounded-full"
-                  />
+              return (
+                <div
+                  className="col-span-2 row-span-1 relative bg-green-900 text-white rounded-lg shadow-md py-2 flex justify-center items-center"
+                  style={{
+                    gridColumnStart: playerPositions[index]?.colStart,
+                    gridRowStart: playerPositions[index]?.rowStart,
+                  }}
+                  key={index}
+                >
+                  <div className="mb-2">
+                    <img
+                      src="/avatar.svg"
+                      alt={`avatar`}
+                      className="h-12 w-12 rounded-full"
+                    />
+                  </div>
+                  <p className="text-lg font-semibold">{player}</p>
+                  <div className="w-full flex space-x-3 absolute top-[100%]">
+                    {
+                      gameData?.players?.find((item) => item.playerName === player)?.cards?.map((i) => (
+                        <ReverseCard key={i} />
+                      ))
+                    }
+                  </div>
                 </div>
-                <p className="text-lg font-semibold">{player}</p>
-                <div className="w-full flex space-x-3 absolute top-[100%]">
-                  {[...Array(13)].map((_, cardIndex) => (
-                    <ReverseCard key={cardIndex} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+
+
 
           <div className="col-span-2 row-span-2 relative" style={{ gridColumnStart: 6, gridRowStart: 7 }}>
             <div className="relative">
@@ -135,20 +166,40 @@ export default function CustomRoom() {
               <img src="/avatar.svg" alt="avatar" className="h-14 w-14 absolute top-[-5px] left-[-25px] rounded-full border-[3px] border-emerald-800" />
               <p className="bg-emerald-50 min-w-80 text-center text-lg p-1">hello</p>
             </div>
-            <div className="w-full flex space-x-8 absolute top-[50%]">
-              {gameData.players[0].cards.map((item) => (
-                <div
-                  key={item}
-                  onClick={() => handleCardClick(item)}
-                  className={`transform transition-transform duration-300 cursor-pointer ${
-                    selectedCards.includes(item) ? 'translate-y-[-10px]' : ''
-                  }`}
-                >
-                  <Card imgSrc={item} />
-                </div>
-              ))}
+            <div className="w-full flex space-x-6 absolute top-[50%] left-[-25%]">
+              {gameData?.players
+                ?.find((player) => player.playerName === roomData.name)
+                ?.cards?.map((item) => (
+                  <div
+                    key={item}
+                    onClick={() => handleCardClick(item)}
+                    className={`transform transition-transform duration-300 cursor-pointer ${selectedCards.includes(item) ? 'translate-y-[-20px]' : ''
+                      }`}
+                  >
+                    <Card imgSrc={item} />
+                  </div>
+                ))}
             </div>
           </div>
+
+          {
+            gameData.turn === socket.id 
+            ? !gameData.currentFace ?  
+              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 5, gridRowStart: 9 }}>
+               {
+                cardFaces.map((face) => (
+                  <button disabled={selectedCards.length === 0} onClick={() => handleFaceClick(face)} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>{face}</button>
+                ))
+               }
+              </div>
+            :
+              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 5, gridRowStart: 9 }}>
+                <button onClick={doubtHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>I Doubt</button>
+                <button onClick={throwHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>Throw</button>
+                <button onClick={skipChanceHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>Skip</button>
+              </div>
+              : null
+          }
 
           {started ? (
             <div></div>

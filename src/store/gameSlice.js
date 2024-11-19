@@ -7,7 +7,7 @@ const initialState = {
     cards : [],
     socketId : null
   }],
-
+  roomId : "",
   turn : null,
   prev : null,
   skip : [],
@@ -23,15 +23,25 @@ const gameSlice = createSlice({
   initialState,
   reducers : {
     setGameData : (state , action) => {
-       const {players , turn , skip} = action.payload;
+       const {players , turn , skip , roomId} = action.payload;
        state.players = players;
+       state.roomId = roomId;
        state.turn = turn;
        state.skip = skip;
        state.won = skip;
+    },
+    setFaceChanceData : (state , action) => {
+      const {players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace} = action.payload;
+      state.players = players;
+      state.turn = turn;
+      state.cardsInMiddle = cardsInMiddle;
+      state.cardsInLastChance = cardsInLastChance;
+      state.prev = prev;
+      state.currentFace = currentFace;
     }
   }
 })
 
-export const {setGameData} = gameSlice.actions;
+export const {setGameData , setFaceChanceData} = gameSlice.actions;
 
 export default gameSlice.reducer;
