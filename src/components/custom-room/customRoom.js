@@ -7,6 +7,8 @@ import ReverseCard from '../reverse-card/ReverseCard';
 import { setDoubtOver, setFaceChanceData, setGameData, setRoundOver, setSkipTurn, setThrowChanceData } from '../../store/gameSlice';
 import { cardFaces } from '../constants/cardFaces';
 import DoubtCard from '../doubt-card/doubtCard';
+import { shuffle } from 'lodash';
+import { getPlayerPositions } from '../constants/playerPositions';
 
 export default function CustomRoom() {
   const dispatch = useDispatch();
@@ -169,13 +171,8 @@ export default function CustomRoom() {
           {
             // players and thier components
             players.map((player, index) => {
-              const playerPositions = [
-                { colStart: 1, rowStart: 3 },
-                { colStart: 3, rowStart: 1 },
-                { colStart: 6, rowStart: 1 },
-                { colStart: 9, rowStart: 1 },
-                { colStart: 11, rowStart: 3 },
-              ];
+
+              const playerPositions = getPlayerPositions(players.length)
 
               return (
                 <div
@@ -271,7 +268,7 @@ export default function CustomRoom() {
             doubtChance ? 
             <div className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
               {
-                gameData.cardsInLastChance.map((item) => (
+                shuffle(gameData.cardsInLastChance).map((item) => (
                       <div onClick={() => handleFlip(item)} className=''>
                         <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
                       </div>
