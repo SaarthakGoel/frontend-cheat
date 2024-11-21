@@ -61,10 +61,20 @@ const gameSlice = createSlice({
       state.currentFace = currentFace;
       state.cardsInMiddle = cardsInMiddle;
       state.cardsInLastChance = cardsInLastChance;
+    },
+    setDoubtOver : (state , action) => {
+      const {players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance} = action.payload;
+      state.players = players;
+      state.turn = turn;
+      state.prev = prev;
+      state.skip = skip;
+      state.currentFace = currentFace;
+      state.cardsInMiddle = cardsInMiddle;
+      state.cardsInLastChance = cardsInLastChance;
     }
   }
 })
 
-export const {setGameData , setFaceChanceData , setThrowChanceData , setSkipTurn , setRoundOver} = gameSlice.actions;
+export const {setGameData , setFaceChanceData , setThrowChanceData , setSkipTurn , setRoundOver , setDoubtOver} = gameSlice.actions;
 
 export default gameSlice.reducer;

@@ -4,8 +4,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import socket from '../../socket/socket';
 import { setPlayerNames } from '../../store/roomSlice';
 import ReverseCard from '../reverse-card/ReverseCard';
-import { setFaceChanceData, setGameData, setRoundOver, setSkipTurn, setThrowChanceData } from '../../store/gameSlice';
+import { setDoubtOver, setFaceChanceData, setGameData, setRoundOver, setSkipTurn, setThrowChanceData } from '../../store/gameSlice';
 import { cardFaces } from '../constants/cardFaces';
+import DoubtCard from '../doubt-card/doubtCard';
 
 export default function CustomRoom() {
   const dispatch = useDispatch();
@@ -18,6 +19,28 @@ export default function CustomRoom() {
   const [win, setWin] = useState(false);
   const [started, setStarted] = useState(false);
   const [selectedCards, setSelectedCards] = useState([]); // State for selected cards
+  const [doubtChance , setDoubtChance] = useState(false);
+  const [flipedCard, setflipedCard] = useState(null);
+
+  console.log(flipedCard);
+
+  const handleFlip = (item) => {
+    
+    if (!flipedCard) {
+      socket.emit('cardFlipped' , {currRoom : roomData.roomId , item : item});
+      socket.emit('handleDoubtLogic' , {openCard : item , currRoom : Number(roomData.roomId) , currSocketId : socket.id});
+    }
+  };
+
+  socket.on('cardFlipComplete' , ({item}) => {
+    setflipedCard(item);
+  })
+
+  socket.on('doubtLogicDone' , ({players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}) => {
+    dispatch(setDoubtOver({players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}));
+    setDoubtChance(false);
+    setflipedCard(null)
+  });
 
   // Room Socket Logic
   socket.on('playerJoined', ({ playerName }) => {
@@ -92,7 +115,6 @@ export default function CustomRoom() {
   };
 
 
-
   function handleFaceClick(face) {
     socket.emit('FaceChancePlayed' , {currSocketId : socket.id , currRoom : Number(roomData.roomId) , selectedCards : selectedCards , currFace : face })
     setSelectedCards([]);
@@ -105,8 +127,13 @@ export default function CustomRoom() {
 
 
   function doubtHandler(){
-    socket.emit('DoubtHandler' , {})
+    socket.emit('doubtChance' , {currRoom : roomData.roomId});
+    
   }
+
+  socket.on('doubleChosen' , () => {
+    setDoubtChance(true);
+  })
 
 
 
@@ -189,7 +216,7 @@ export default function CustomRoom() {
             <div className="w-full flex space-x-6 absolute top-[50%] left-[-25%]">
               {gameData?.players
                 ?.find((player) => player.playerName === roomData.name)
-                ?.cards?.map((item) => (
+                ?.cards?.map((item) => ( 
                   <div
                     key={item}
                     onClick={() => handleCardClick(item)}
@@ -208,7 +235,7 @@ export default function CustomRoom() {
               <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 5, gridRowStart: 9 }}>
                {
                 cardFaces.map((face) => (
-                  <button disabled={selectedCards.length === 0} onClick={() => handleFaceClick(face)} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>{face}</button>
+                  <button disabled={selectedCards.length === 0} onClick={() => handleFaceClick(face)} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>{face === "T" ? "10" : face}</button>
                 ))
                }
               </div>
@@ -239,7 +266,26 @@ export default function CustomRoom() {
               </p>
             </div>
           )}
+
+          {
+            doubtChance ? 
+            <div className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
+              {
+                gameData.cardsInLastChance.map((item) => (
+                      <div onClick={() => handleFlip(item)} className=''>
+                        <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
+                      </div>
+                    ))
+              }
+            </div> 
+            : null
+          }
+
+
         </div>
+
+
+
         {win ? (
           <div className="mt-10 bg-white p-4 rounded-md shadow-lg w-full max-w-lg text-center">
             <p className="text-gray-800 text-lg mb-4">Congratulations! You won!</p>
@@ -253,6 +299,8 @@ export default function CustomRoom() {
             </div>
           </div>
         ) : null}
+
+
       </div>
     </div>
   );
