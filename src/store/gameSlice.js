@@ -63,10 +63,11 @@ const gameSlice = createSlice({
       state.cardsInLastChance = cardsInLastChance;
     },
     setDoubtOver : (state , action) => {
-      const {players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance} = action.payload;
+      const {players , turn , prev , skip , won , currentFace , cardsInMiddle , cardsInLastChance} = action.payload;
       state.players = players;
       state.turn = turn;
       state.prev = prev;
+      state.won = won;
       state.skip = skip;
       state.currentFace = currentFace;
       state.cardsInMiddle = cardsInMiddle;

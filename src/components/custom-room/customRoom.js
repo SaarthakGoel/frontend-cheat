@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '../card/card';
 import { useDispatch, useSelector } from 'react-redux';
 import socket from '../../socket/socket';
@@ -22,26 +22,28 @@ export default function CustomRoom() {
   const [win, setWin] = useState(false);
   const [started, setStarted] = useState(false);
   const [selectedCards, setSelectedCards] = useState([]); // State for selected cards
-  const [doubtChance , setDoubtChance] = useState(false);
+  const [doubtChance, setDoubtChance] = useState(false);
   const [flipedCard, setflipedCard] = useState(null);
-  const [mainMessage , setMainMessage] = useState("");
+  const [mainMessage, setMainMessage] = useState("");
+  const [isSkipped, setIsSkipped] = useState(false);
+  const [myCards , setMyCards] = useState(null);
 
   console.log(flipedCard);
 
   const handleFlip = (item) => {
-    
+
     if (!flipedCard) {
-      socket.emit('cardFlipped' , {currRoom : roomData.roomId , item : item});
-      socket.emit('handleDoubtLogic' , {openCard : item , currRoom : Number(roomData.roomId) , currSocketId : socket.id});
+      socket.emit('cardFlipped', { currRoom: roomData.roomId, item: item });
+      socket.emit('handleDoubtLogic', { openCard: item, currRoom: Number(roomData.roomId), currSocketId: socket.id });
     }
   };
 
-  socket.on('cardFlipComplete' , ({item}) => {
+  socket.on('cardFlipComplete', ({ item }) => {
     setflipedCard(item);
   })
 
-  socket.on('doubtLogicDone' , ({players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance , mainMessage}) => {
-    dispatch(setDoubtOver({players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}));
+  socket.on('doubtLogicDone', ({ players, turn, prev, skip, won, currentFace, cardsInMiddle, cardsInLastChance, mainMessage }) => {
+    dispatch(setDoubtOver({ players, turn, prev, skip, won, currentFace, cardsInMiddle, cardsInLastChance }));
     setDoubtChance(false);
     setflipedCard(null);
     setMainMessage(mainMessage);
@@ -102,8 +104,8 @@ export default function CustomRoom() {
     socket.emit('startGame', { currSocketId: socket.id, currRoom: Number(roomData.roomId) });
   }
 
-  socket.on('gameStarted', ({ players, turn, skip , mainMessage }) => {
-    dispatch(setGameData({ players, turn, skip , roomId : roomData.roomId }));
+  socket.on('gameStarted', ({ players, turn, skip, mainMessage }) => {
+    dispatch(setGameData({ players, turn, skip, roomId: roomData.roomId }));
     setStarted(true);
     setMainMessage(mainMessage);
   });
@@ -122,55 +124,85 @@ export default function CustomRoom() {
 
 
   function handleFaceClick(face) {
-    socket.emit('FaceChancePlayed' , {currSocketId : socket.id , currRoom : Number(roomData.roomId) , selectedCards : selectedCards , currFace : face })
+    socket.emit('FaceChancePlayed', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards, currFace: face })
     setSelectedCards([]);
   }
 
-  socket.on('FaceChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace , mainMessage}) => {
-    dispatch(setFaceChanceData({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace}));
+  socket.on('FaceChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, currentFace, mainMessage }) => {
+    dispatch(setFaceChanceData({ players, turn, cardsInMiddle, cardsInLastChance, prev, currentFace }));
     setMainMessage(mainMessage);
   })
 
 
 
-  function doubtHandler(){
-    socket.emit('doubtChance' , {currRoom : roomData.roomId});
-    
+  function doubtHandler() {
+    socket.emit('doubtChance', { currRoom: roomData.roomId });
+
   }
 
-  socket.on('doubleChosen' , ({mainMessage}) => {
+  socket.on('doubleChosen', ({ mainMessage }) => {
     setDoubtChance(true);
     setMainMessage(mainMessage);
   })
 
 
 
-  function throwHandler(){
-    socket.emit('throwChance' , {currSocketId : socket.id , currRoom : Number(roomData.roomId) , selectedCards : selectedCards});
+  function throwHandler() {
+    socket.emit('throwChance', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards });
     setSelectedCards([]);
   }
 
-  socket.on('throwChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , won , mainMessage}) => {
-    dispatch(setThrowChanceData({players , turn , cardsInMiddle , cardsInLastChance , prev , won}));
+  socket.on('throwChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, won, mainMessage }) => {
+    dispatch(setThrowChanceData({ players, turn, cardsInMiddle, cardsInLastChance, prev, won }));
     setMainMessage(mainMessage)
   })
 
 
 
-  function skipChanceHandler(){
-    socket.emit('skipChance' , {currSocketId : socket.id , currRoom : Number(roomData.roomId)});
+  function skipChanceHandler() {
+    socket.emit('skipChance', { currSocketId: socket.id, currRoom: Number(roomData.roomId) });
   }
 
-  socket.on('chanceSkipped' , ({turn , skip , mainMessage}) => {
-    dispatch(setSkipTurn({turn , skip}));
+  socket.on('chanceSkipped', ({ turn, skip, mainMessage }) => {
+    dispatch(setSkipTurn({ turn, skip }));
     setMainMessage(mainMessage);
   })
 
-  socket.on('roundOver' , ({turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}) => {
-    dispatch(setRoundOver({turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}))
+  socket.on('roundOver', ({ turn, prev, skip, currentFace, cardsInMiddle, cardsInLastChance }) => {
+    dispatch(setRoundOver({ turn, prev, skip, currentFace, cardsInMiddle, cardsInLastChance }))
   })
 
 
+  function handleIWon(){
+    socket.emit('iwon' , {currSocketId: socket.id, currRoom: Number(roomData.roomId)});
+  }
+
+
+
+
+
+
+  useEffect(() => {
+    function isSkippedcheck() {
+      const index = gameData.players.findIndex((player) => player.socketId === socket.id)
+      console.log(index);
+      if (!gameData.skip[index]) {
+        setIsSkipped(false)
+      } else {
+        setIsSkipped(true)
+      }
+    }
+
+    isSkippedcheck();
+  }, [gameData.skip]);
+
+  useEffect(() => {
+    const x = gameData.players.find((player) => player.socketId === socket.id)
+    console.log(x);
+    setMyCards(x?.cardQuantity);
+  },[gameData])
+
+  console.log(myCards)
 
   return (
     <div className='max-h-[100vh]'>
@@ -223,7 +255,7 @@ export default function CustomRoom() {
             <div className="w-full flex space-x-6 absolute top-[50%] left-[-25%]">
               {gameData?.players
                 ?.find((player) => player.playerName === roomData.name)
-                ?.cards?.map((item) => ( 
+                ?.cards?.map((item) => (
                   <div
                     key={item}
                     onClick={() => handleCardClick(item)}
@@ -237,23 +269,63 @@ export default function CustomRoom() {
           </div>
 
           {
-            gameData.turn === socket.id 
-            ? !gameData.currentFace ?  
-              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 4, gridRowStart: 9 }}>
-               {
-                cardFaces.map((face) => (
-                  <button disabled={selectedCards.length === 0} onClick={() => handleFaceClick(face)} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>{face === "T" ? "10" : face}</button>
-                ))
-               }
-              </div>
-            :
-              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 4, gridRowStart: 9 }}>
-                <button onClick={doubtHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>I Doubt</button>
-                <button onClick={throwHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>Throw</button>
-                <button onClick={skipChanceHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>Skip</button>
-              </div>
-              : null
-          }
+  gameData.turn === socket.id && (
+    myCards === 0 ? (
+      <div
+        className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+        style={{ gridColumnStart: 4, gridRowStart: 9 }}
+      >
+        <button
+          onClick={handleIWon}
+          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+        >
+          I WON
+        </button>
+      </div>
+    ) : !gameData.currentFace ? (
+      <div
+        className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+        style={{ gridColumnStart: 4, gridRowStart: 9 }}
+      >
+        {cardFaces.map((face, index) => (
+          <button
+            key={index} // Ensure key is unique
+            disabled={selectedCards.length === 0}
+            onClick={() => handleFaceClick(face)}
+            className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+          >
+            {face === "T" ? "10" : face}
+          </button>
+        ))}
+      </div>
+    ) : (
+      <div
+        className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+        style={{ gridColumnStart: 4, gridRowStart: 9 }}
+      >
+        <button
+          onClick={doubtHandler}
+          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+        >
+          I Doubt
+        </button>
+        <button
+          onClick={throwHandler}
+          disabled={isSkipped}
+          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Throw
+        </button>
+        <button
+          onClick={skipChanceHandler}
+          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+        >
+          Skip
+        </button>
+      </div>
+    )
+  )
+}
 
           {started ? (
             <div></div>
@@ -275,20 +347,20 @@ export default function CustomRoom() {
           )}
 
           {
-            doubtChance ? 
-            <div className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
-              {
-                shuffle(gameData.cardsInLastChance).map((item) => (
-                      <div onClick={() => handleFlip(item)} className=''>
-                        <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
-                      </div>
-                    ))
-              }
-            </div> 
-            : null
+            doubtChance ?
+              <div className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
+                {
+                  shuffle(gameData.cardsInLastChance).map((item) => (
+                    <div onClick={() => handleFlip(item)} className=''>
+                      <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
+                    </div>
+                  ))
+                }
+              </div>
+              : null
           }
 
-          <Chat  />
+          <Chat />
 
 
         </div>
