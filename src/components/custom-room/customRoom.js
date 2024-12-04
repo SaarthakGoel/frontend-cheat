@@ -9,6 +9,7 @@ import { cardFaces } from '../constants/cardFaces';
 import DoubtCard from '../doubt-card/doubtCard';
 import { shuffle } from 'lodash';
 import { getPlayerPositions } from '../constants/playerPositions';
+import Chat from '../chat/Chat';
 
 export default function CustomRoom() {
   const dispatch = useDispatch();
@@ -23,6 +24,7 @@ export default function CustomRoom() {
   const [selectedCards, setSelectedCards] = useState([]); // State for selected cards
   const [doubtChance , setDoubtChance] = useState(false);
   const [flipedCard, setflipedCard] = useState(null);
+  const [mainMessage , setMainMessage] = useState("");
 
   console.log(flipedCard);
 
@@ -38,10 +40,11 @@ export default function CustomRoom() {
     setflipedCard(item);
   })
 
-  socket.on('doubtLogicDone' , ({players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}) => {
+  socket.on('doubtLogicDone' , ({players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance , mainMessage}) => {
     dispatch(setDoubtOver({players , turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}));
     setDoubtChance(false);
-    setflipedCard(null)
+    setflipedCard(null);
+    setMainMessage(mainMessage);
   });
 
   // Room Socket Logic
@@ -99,9 +102,10 @@ export default function CustomRoom() {
     socket.emit('startGame', { currSocketId: socket.id, currRoom: Number(roomData.roomId) });
   }
 
-  socket.on('gameStarted', ({ players, turn, skip }) => {
+  socket.on('gameStarted', ({ players, turn, skip , mainMessage }) => {
     dispatch(setGameData({ players, turn, skip , roomId : roomData.roomId }));
     setStarted(true);
+    setMainMessage(mainMessage);
   });
 
   // Function to handle card click
@@ -122,8 +126,9 @@ export default function CustomRoom() {
     setSelectedCards([]);
   }
 
-  socket.on('FaceChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace}) => {
+  socket.on('FaceChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace , mainMessage}) => {
     dispatch(setFaceChanceData({players , turn , cardsInMiddle , cardsInLastChance , prev , currentFace}));
+    setMainMessage(mainMessage);
   })
 
 
@@ -133,8 +138,9 @@ export default function CustomRoom() {
     
   }
 
-  socket.on('doubleChosen' , () => {
+  socket.on('doubleChosen' , ({mainMessage}) => {
     setDoubtChance(true);
+    setMainMessage(mainMessage);
   })
 
 
@@ -144,8 +150,9 @@ export default function CustomRoom() {
     setSelectedCards([]);
   }
 
-  socket.on('throwChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , won}) => {
+  socket.on('throwChanceDone' , ({players , turn , cardsInMiddle , cardsInLastChance , prev , won , mainMessage}) => {
     dispatch(setThrowChanceData({players , turn , cardsInMiddle , cardsInLastChance , prev , won}));
+    setMainMessage(mainMessage)
   })
 
 
@@ -154,8 +161,9 @@ export default function CustomRoom() {
     socket.emit('skipChance' , {currSocketId : socket.id , currRoom : Number(roomData.roomId)});
   }
 
-  socket.on('chanceSkipped' , ({turn , skip}) => {
+  socket.on('chanceSkipped' , ({turn , skip , mainMessage}) => {
     dispatch(setSkipTurn({turn , skip}));
+    setMainMessage(mainMessage);
   })
 
   socket.on('roundOver' , ({turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance}) => {
@@ -165,7 +173,7 @@ export default function CustomRoom() {
 
 
   return (
-    <div>
+    <div className='max-h-[100vh]'>
       <div className="w-full bg-emerald-600 p-5">
         <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
           {
@@ -204,11 +212,13 @@ export default function CustomRoom() {
 
 
 
-          <div className="col-span-2 row-span-2 relative" style={{ gridColumnStart: 6, gridRowStart: 7 }}>
+          <div className="col-span-3 row-span-2 relative" style={{ gridColumnStart: 5, gridRowStart: 7 }}>
             <div className="relative">
               <p className="w-full text-xl text-center font-semibold text-white">{roomData.name}</p>
               <img src="/avatar.svg" alt="avatar" className="h-14 w-14 absolute top-[-5px] left-[-25px] rounded-full border-[3px] border-emerald-800" />
-              <p className="bg-emerald-50 min-w-80 text-center text-lg p-1">hello</p>
+              <p className="bg-emerald-50 min-w-80 text-center text-lg p-1">
+                {mainMessage}
+              </p>
             </div>
             <div className="w-full flex space-x-6 absolute top-[50%] left-[-25%]">
               {gameData?.players
@@ -229,7 +239,7 @@ export default function CustomRoom() {
           {
             gameData.turn === socket.id 
             ? !gameData.currentFace ?  
-              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 5, gridRowStart: 9 }}>
+              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 4, gridRowStart: 9 }}>
                {
                 cardFaces.map((face) => (
                   <button disabled={selectedCards.length === 0} onClick={() => handleFaceClick(face)} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>{face === "T" ? "10" : face}</button>
@@ -237,7 +247,7 @@ export default function CustomRoom() {
                }
               </div>
             :
-              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 5, gridRowStart: 9 }}>
+              <div className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg" style={{ gridColumnStart: 4, gridRowStart: 9 }}>
                 <button onClick={doubtHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>I Doubt</button>
                 <button onClick={throwHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>Throw</button>
                 <button onClick={skipChanceHandler} className='bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300'>Skip</button>
@@ -248,7 +258,7 @@ export default function CustomRoom() {
           {started ? (
             <div></div>
           ) : (
-            <div className="col-span-4 row-span-3 flex flex-col gap-4 justify-center items-center bg-emerald-300 rounded-lg" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
+            <div className="col-span-3 row-span-3 flex flex-col gap-4 justify-center items-center bg-emerald-300 rounded-lg" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
               <button
                 disabled={roomData.playerNames.length !== roomData.playerNo || roomData.host !== true}
                 onClick={handleStartGame}
@@ -277,6 +287,8 @@ export default function CustomRoom() {
             </div> 
             : null
           }
+
+          <Chat  />
 
 
         </div>

@@ -43,6 +43,9 @@ export default function Roompop2({ close }) {
     socket.on('roomFullError' , ({message}) => {
       setError(message)
     })
+    socket.on('duplicateName' , ({message}) => {
+      setError(message);
+    } ) 
     socket.on('roomJoined', ({name , roomName , numPlayers , numDecks}) => {
       dispatch(setState({name , roomName , numPlayers , numDecks , host : false}));
       setError("");
