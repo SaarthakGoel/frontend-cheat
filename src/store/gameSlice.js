@@ -54,10 +54,11 @@ const gameSlice = createSlice({
       state.skip = skip;
     },
     setRoundOver : (state , action) => {
-      const {turn , prev , skip , currentFace , cardsInMiddle , cardsInLastChance} = action.payload;
+      const {turn , prev , skip , won , currentFace , cardsInMiddle , cardsInLastChance} = action.payload;
       state.turn = turn;
       state.prev = prev;
       state.skip = skip;
+      state.won = won;
       state.currentFace = currentFace;
       state.cardsInMiddle = cardsInMiddle;
       state.cardsInLastChance = cardsInLastChance;

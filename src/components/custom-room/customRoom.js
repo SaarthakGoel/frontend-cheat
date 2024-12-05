@@ -10,6 +10,7 @@ import DoubtCard from '../doubt-card/doubtCard';
 import { shuffle } from 'lodash';
 import { getPlayerPositions } from '../constants/playerPositions';
 import Chat from '../chat/Chat';
+import RankCard from '../rankCard/rankCard';
 
 export default function CustomRoom() {
   const dispatch = useDispatch();
@@ -26,7 +27,9 @@ export default function CustomRoom() {
   const [flipedCard, setflipedCard] = useState(null);
   const [mainMessage, setMainMessage] = useState("");
   const [isSkipped, setIsSkipped] = useState(false);
-  const [myCards , setMyCards] = useState(null);
+  const [myCards, setMyCards] = useState(null);
+  const [isPrevOnly, setIsPrevOnly] = useState(false);
+  const [ranking, setRanking] = useState(null);
 
   console.log(flipedCard);
 
@@ -168,13 +171,18 @@ export default function CustomRoom() {
     setMainMessage(mainMessage);
   })
 
-  socket.on('roundOver', ({ turn, prev, skip, currentFace, cardsInMiddle, cardsInLastChance }) => {
-    dispatch(setRoundOver({ turn, prev, skip, currentFace, cardsInMiddle, cardsInLastChance }))
+  socket.on('roundOver', ({ turn, prev, skip, won, currentFace, cardsInMiddle, cardsInLastChance }) => {
+    dispatch(setRoundOver({ turn, prev, skip, won, currentFace, cardsInMiddle, cardsInLastChance }))
+  })
+
+  socket.on('GameOver', ({rankData}) => {
+    setRanking(rankData);
+    console.log(ranking);
   })
 
 
-  function handleIWon(){
-    socket.emit('iwon' , {currSocketId: socket.id, currRoom: Number(roomData.roomId)});
+  function handleIWon() {
+    socket.emit('iwon', { currSocketId: socket.id, currRoom: Number(roomData.roomId) });
   }
 
 
@@ -197,176 +205,189 @@ export default function CustomRoom() {
   }, [gameData.skip]);
 
   useEffect(() => {
-    const x = gameData.players.find((player) => player.socketId === socket.id)
-    console.log(x);
-    setMyCards(x?.cardQuantity);
-  },[gameData])
+    if (gameData.turn === gameData.prev) {
+      setIsPrevOnly(true);
+    } else {
+      setIsPrevOnly(false);
+    }
+  }, [gameData.turn])
 
-  console.log(myCards)
+
+  useEffect(() => {
+    const x = gameData.players.find((player) => player.socketId === socket.id)
+    setMyCards(x?.cardQuantity);
+  }, [gameData])
+
 
   return (
     <div className='max-h-[100vh]'>
       <div className="w-full bg-emerald-600 p-5">
-        <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
-          {
-            // players and thier components
-            players.map((player, index) => {
+        {
+          ranking ? <div className='flex justify-center items-center min-h-screen'>
+             <RankCard ranking={ranking} />
+          </div>
+            :
+            <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
+              {
+                // players and thier components
+                players.map((player, index) => {
 
-              const playerPositions = getPlayerPositions(players.length)
+                  const playerPositions = getPlayerPositions(players.length)
 
-              return (
-                <div
-                  className="col-span-2 row-span-1 relative bg-green-900 text-white rounded-lg shadow-md py-2 flex justify-center items-center"
-                  style={{
-                    gridColumnStart: playerPositions[index]?.colStart,
-                    gridRowStart: playerPositions[index]?.rowStart,
-                  }}
-                  key={index}
-                >
-                  <div className="mb-2">
-                    <img
-                      src="/avatar.svg"
-                      alt={`avatar`}
-                      className="h-12 w-12 rounded-full"
-                    />
-                  </div>
-                  <p className="text-lg font-semibold">{player}</p>
-                  <div className="w-full flex space-x-3 absolute top-[100%]">
+                  return (
+                    <div
+                      className="col-span-2 row-span-1 relative bg-green-900 text-white rounded-lg shadow-md py-2 flex justify-center items-center"
+                      style={{
+                        gridColumnStart: playerPositions[index]?.colStart,
+                        gridRowStart: playerPositions[index]?.rowStart,
+                      }}
+                      key={index}
+                    >
+                      <div className="mb-2">
+                        <img
+                          src="/avatar.svg"
+                          alt={`avatar`}
+                          className="h-12 w-12 rounded-full"
+                        />
+                      </div>
+                      <p className="text-lg font-semibold">{player}</p>
+                      <div className="w-full flex space-x-3 absolute top-[100%]">
+                        {
+                          gameData?.players?.find((item) => item.playerName === player)?.cards?.map((i) => (
+                            <ReverseCard key={i} />
+                          ))
+                        }
+                      </div>
+                    </div>
+                  );
+                })}
+
+
+
+              <div className="col-span-3 row-span-2 relative" style={{ gridColumnStart: 5, gridRowStart: 7 }}>
+                <div className="relative">
+                  <p className="w-full text-xl text-center font-semibold text-white">{roomData.name}</p>
+                  <img src="/avatar.svg" alt="avatar" className="h-14 w-14 absolute top-[-5px] left-[-25px] rounded-full border-[3px] border-emerald-800" />
+                  <p className="bg-emerald-50 min-w-80 text-center text-lg p-1">
+                    {mainMessage}
+                  </p>
+                </div>
+                <div className="w-full flex space-x-6 absolute top-[50%] left-[-25%]">
+                  {gameData?.players
+                    ?.find((player) => player.playerName === roomData.name)
+                    ?.cards?.map((item) => (
+                      <div
+                        key={item}
+                        onClick={() => handleCardClick(item)}
+                        className={`transform transition-transform duration-300 cursor-pointer ${selectedCards.includes(item) ? 'translate-y-[-20px]' : ''
+                          }`}
+                      >
+                        <Card imgSrc={item} />
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {
+                gameData.turn === socket.id && (
+                  myCards === 0 ? (
+                    <div
+                      className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+                      style={{ gridColumnStart: 4, gridRowStart: 9 }}
+                    >
+                      <button
+                        onClick={handleIWon}
+                        className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+                      >
+                        I WON
+                      </button>
+                    </div>
+                  ) : !gameData.currentFace ? (
+                    <div
+                      className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+                      style={{ gridColumnStart: 4, gridRowStart: 9 }}
+                    >
+                      {cardFaces.map((face, index) => (
+                        <button
+                          key={index} // Ensure key is unique
+                          disabled={selectedCards.length === 0}
+                          onClick={() => handleFaceClick(face)}
+                          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+                        >
+                          {face === "T" ? "10" : face}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div
+                      className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+                      style={{ gridColumnStart: 4, gridRowStart: 9 }}
+                    >
+                      <button
+                        disabled={isPrevOnly}
+                        onClick={doubtHandler}
+                        className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        I Doubt
+                      </button>
+                      <button
+                        onClick={throwHandler}
+                        disabled={isSkipped}
+                        className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Throw
+                      </button>
+                      <button
+                        onClick={skipChanceHandler}
+                        className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+                      >
+                        Skip
+                      </button>
+                    </div>
+                  )
+                )
+              }
+
+              {started ? (
+                <div></div>
+              ) : (
+                <div className="col-span-3 row-span-3 flex flex-col gap-4 justify-center items-center bg-emerald-300 rounded-lg" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
+                  <button
+                    disabled={roomData.playerNames.length !== roomData.playerNo || roomData.host !== true}
+                    onClick={handleStartGame}
+                    className="bg-emerald-900 rounded-full text-2xl font-semibold text-emerald-100 px-8 py-3 hover:bg-white hover:text-emerald-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Start Game
+                  </button>
+                  <p className="text-lg text-pretty font-semibold">No of players in room : {roomData.playerNames.length}/{roomData.playerNo}</p>
+                  <p className="text-lg text-pretty font-semibold">Room Id : {roomData.roomId}</p>
+                  <p className="text-pretty font-semibold">
+                    {roomData.playerNames.length === roomData.playerNo ? 'Wait for the host to start the game' : 'Waiting for other players'}
+                  </p>
+                </div>
+              )}
+
+              {
+                doubtChance ?
+                  <div className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
                     {
-                      gameData?.players?.find((item) => item.playerName === player)?.cards?.map((i) => (
-                        <ReverseCard key={i} />
+                      shuffle(gameData.cardsInLastChance).map((item) => (
+                        <div onClick={() => handleFlip(item)} className=''>
+                          <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
+                        </div>
                       ))
                     }
                   </div>
-                </div>
-              );
-            })}
+                  : null
+              }
+
+              <Chat />
 
 
-
-          <div className="col-span-3 row-span-2 relative" style={{ gridColumnStart: 5, gridRowStart: 7 }}>
-            <div className="relative">
-              <p className="w-full text-xl text-center font-semibold text-white">{roomData.name}</p>
-              <img src="/avatar.svg" alt="avatar" className="h-14 w-14 absolute top-[-5px] left-[-25px] rounded-full border-[3px] border-emerald-800" />
-              <p className="bg-emerald-50 min-w-80 text-center text-lg p-1">
-                {mainMessage}
-              </p>
             </div>
-            <div className="w-full flex space-x-6 absolute top-[50%] left-[-25%]">
-              {gameData?.players
-                ?.find((player) => player.playerName === roomData.name)
-                ?.cards?.map((item) => (
-                  <div
-                    key={item}
-                    onClick={() => handleCardClick(item)}
-                    className={`transform transition-transform duration-300 cursor-pointer ${selectedCards.includes(item) ? 'translate-y-[-20px]' : ''
-                      }`}
-                  >
-                    <Card imgSrc={item} />
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          {
-  gameData.turn === socket.id && (
-    myCards === 0 ? (
-      <div
-        className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-        style={{ gridColumnStart: 4, gridRowStart: 9 }}
-      >
-        <button
-          onClick={handleIWon}
-          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
-        >
-          I WON
-        </button>
-      </div>
-    ) : !gameData.currentFace ? (
-      <div
-        className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-        style={{ gridColumnStart: 4, gridRowStart: 9 }}
-      >
-        {cardFaces.map((face, index) => (
-          <button
-            key={index} // Ensure key is unique
-            disabled={selectedCards.length === 0}
-            onClick={() => handleFaceClick(face)}
-            className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
-          >
-            {face === "T" ? "10" : face}
-          </button>
-        ))}
-      </div>
-    ) : (
-      <div
-        className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-        style={{ gridColumnStart: 4, gridRowStart: 9 }}
-      >
-        <button
-          onClick={doubtHandler}
-          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
-        >
-          I Doubt
-        </button>
-        <button
-          onClick={throwHandler}
-          disabled={isSkipped}
-          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Throw
-        </button>
-        <button
-          onClick={skipChanceHandler}
-          className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
-        >
-          Skip
-        </button>
-      </div>
-    )
-  )
-}
-
-          {started ? (
-            <div></div>
-          ) : (
-            <div className="col-span-3 row-span-3 flex flex-col gap-4 justify-center items-center bg-emerald-300 rounded-lg" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
-              <button
-                disabled={roomData.playerNames.length !== roomData.playerNo || roomData.host !== true}
-                onClick={handleStartGame}
-                className="bg-emerald-900 rounded-full text-2xl font-semibold text-emerald-100 px-8 py-3 hover:bg-white hover:text-emerald-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Start Game
-              </button>
-              <p className="text-lg text-pretty font-semibold">No of players in room : {roomData.playerNames.length}/{roomData.playerNo}</p>
-              <p className="text-lg text-pretty font-semibold">Room Id : {roomData.roomId}</p>
-              <p className="text-pretty font-semibold">
-                {roomData.playerNames.length === roomData.playerNo ? 'Wait for the host to start the game' : 'Waiting for other players'}
-              </p>
-            </div>
-          )}
-
-          {
-            doubtChance ?
-              <div className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative" style={{ gridColumnStart: 1, gridRowStart: 6 }}>
-                {
-                  shuffle(gameData.cardsInLastChance).map((item) => (
-                    <div onClick={() => handleFlip(item)} className=''>
-                      <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
-                    </div>
-                  ))
-                }
-              </div>
-              : null
-          }
-
-          <Chat />
 
 
-        </div>
-
-
-
+        }
         {win ? (
           <div className="mt-10 bg-white p-4 rounded-md shadow-lg w-full max-w-lg text-center">
             <p className="text-gray-800 text-lg mb-4">Congratulations! You won!</p>
@@ -380,7 +401,6 @@ export default function CustomRoom() {
             </div>
           </div>
         ) : null}
-
 
       </div>
     </div>
