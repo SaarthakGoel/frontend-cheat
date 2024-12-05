@@ -11,4 +11,5 @@
 
 .facecardanimation{
   animation: faceanime 1s ease-out forwards;
+  transform-origin: center;
 }

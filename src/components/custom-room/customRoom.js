@@ -11,6 +11,7 @@ import { shuffle } from 'lodash';
 import { getPlayerPositions } from '../constants/playerPositions';
 import Chat from '../chat/Chat';
 import RankCard from '../rankCard/rankCard';
+import FaceCardAnimation from '../Animations/FaceCardAnimation';
 import './customRoom.css';
 
 
@@ -33,6 +34,10 @@ export default function CustomRoom() {
   const [myCards, setMyCards] = useState(null);
   const [isPrevOnly, setIsPrevOnly] = useState(false);
   const [ranking, setRanking] = useState(null);
+
+
+  //Animation states
+  const [faceCardAnimation , setFaceCardAnimation] = useState(false);
 
   const handleFlip = (item) => {
 
@@ -124,8 +129,12 @@ export default function CustomRoom() {
 
 
   function handleFaceClick(face) {
-    socket.emit('FaceChancePlayed', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards, currFace: face })
-    setSelectedCards([]);
+    setFaceCardAnimation(true);
+    setTimeout(() => {
+      socket.emit('FaceChancePlayed', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards, currFace: face })
+      setSelectedCards([]);
+      setFaceCardAnimation(false);
+    },500);
   }
 
   socket.on('FaceChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, currentFace, mainMessage }) => {
@@ -148,9 +157,12 @@ export default function CustomRoom() {
 
 
   function throwHandler() {
-    socket.emit('throwChance', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards });
-    //animate cards
-    setSelectedCards([]);
+    setFaceCardAnimation(true);
+    setTimeout(() => {
+      socket.emit('throwChance', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards });
+      setFaceCardAnimation(false);
+      setSelectedCards([]);
+    },500)
   }
 
   socket.on('throwChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, won, mainMessage }) => {
@@ -278,7 +290,7 @@ export default function CustomRoom() {
                     <div
                       key={item}
                       onClick={() => handleCardClick(item)}
-                      className={`transform transition-transform duration-300 cursor-pointer ${selectedCards.includes(item) ? 'translate-y-[-20px]' : ''
+                      className={`transform transition-transform duration-200 cursor-pointer ${selectedCards.includes(item) ? faceCardAnimation ? 'facecardanimation' : 'translate-y-[-20px]' : ''
                         }`}
                     >
                       <Card imgSrc={item} />
@@ -299,7 +311,7 @@ export default function CustomRoom() {
                   <ReverseCard key={i} />
                 ))
                 :
-                gameData.cardsInMiddle?.map(i => (
+                gameData.cardsInMiddle?.map(i => ( 
                   <ReverseCard key={i} />
                 ))
                }
