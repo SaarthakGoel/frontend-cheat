@@ -11,7 +11,6 @@ import { shuffle } from 'lodash';
 import { getPlayerPositions } from '../constants/playerPositions';
 import Chat from '../chat/Chat';
 import RankCard from '../rankCard/rankCard';
-import FaceCardAnimation from '../Animations/FaceCardAnimation';
 import './customRoom.css';
 
 
@@ -34,6 +33,7 @@ export default function CustomRoom() {
   const [myCards, setMyCards] = useState(null);
   const [isPrevOnly, setIsPrevOnly] = useState(false);
   const [ranking, setRanking] = useState(null);
+  const [shuffledArr , setShuffledArr] = useState([]);
 
 
   //Animation states
@@ -43,7 +43,9 @@ export default function CustomRoom() {
 
     if (!flipedCard) {
       socket.emit('cardFlipped', { currRoom: roomData.roomId, item: item });
-      socket.emit('handleDoubtLogic', { openCard: item, currRoom: Number(roomData.roomId), currSocketId: socket.id });
+      setTimeout(() => {
+        socket.emit('handleDoubtLogic', { openCard: item, currRoom: Number(roomData.roomId), currSocketId: socket.id });
+      },2000)
     }
   };
 
@@ -150,6 +152,7 @@ export default function CustomRoom() {
   }
 
   socket.on('doubleChosen', ({ mainMessage }) => {
+    setShuffledArr(shuffle(gameData.cardsInLastChance));
     setDoubtChance(true);
     setMainMessage(mainMessage);
   })
@@ -193,6 +196,7 @@ export default function CustomRoom() {
 
   function handleIWon() {
     socket.emit('iwon', { currSocketId: socket.id, currRoom: Number(roomData.roomId) });
+    setWin(true);
   }
 
 
@@ -353,7 +357,7 @@ export default function CustomRoom() {
                   style={{ gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
-                    disabled={isPrevOnly}
+                    disabled={isPrevOnly || doubtChance}
                     onClick={doubtHandler}
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -361,14 +365,15 @@ export default function CustomRoom() {
                   </button>
                   <button
                     onClick={throwHandler}
-                    disabled={isSkipped}
+                    disabled={isSkipped || doubtChance}
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Throw
                   </button>
                   <button
+                  disabled={doubtChance}
                     onClick={skipChanceHandler}
-                    className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+                    className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Skip
                   </button>
@@ -407,10 +412,10 @@ export default function CustomRoom() {
                 className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative"
                 style={{ gridColumnStart: 1, gridRowStart: 6 }}
               >
-                {shuffle(gameData.cardsInLastChance).map(item => (
-                  <div key={item} onClick={() => handleFlip(item)}>
+                {shuffledArr.map(item => (
+                  <button key={item} disabled={gameData.turn !== socket.id} onClick={() => handleFlip(item)}>
                     <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -422,16 +427,8 @@ export default function CustomRoom() {
 
         {/* Win Section */}
         {win && (
-          <div className="mt-10 bg-white p-4 rounded-md shadow-lg w-full max-w-lg text-center">
+          <div className="col-span-3 row-span-1 mt-10 bg-white p-4 rounded-md shadow-lg w-full max-w-lg text-center" style={{ gridColumnStart: 4, gridRowStart: 9 }}>
             <p className="text-gray-800 text-lg mb-4">Congratulations! You won!</p>
-            <div className="flex justify-between">
-              <button className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600">
-                Play with other rivals
-              </button>
-              <button className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600">
-                Play with the same rivals
-              </button>
-            </div>
           </div>
         )}
       </div>
