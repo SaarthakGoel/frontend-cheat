@@ -4,15 +4,13 @@ import socket from '../../socket/socket';
 import { useDispatch } from 'react-redux';
 import { setState } from '../../store/roomSlice';
 
-export default function Roompop({ close }) {
+export default function PlayOnlinePop({ close }) {
 
   console.log(socket.id)
 
-  const [roomName, setRoomName] = useState('');
   const [name, setName] = useState('');
   const [numPlayers, setNumPlayers] = useState(3);
   const [numDecks, setNumDecks] = useState(1);
-  const [roomNameError, setRoomNameError] = useState('');
   const [nameError, setNameError] = useState('');
   const [isValid, setIsValid] = useState(false);
   const [error , setError] = useState("");
@@ -21,12 +19,6 @@ export default function Roompop({ close }) {
   const dispatch = useDispatch();
 
   // Validation functions
-  const validateRoomName = () => {
-    const isValid = /^\d{6}$/.test(roomName);
-    setRoomNameError(isValid ? '' : 'Room name must be a 6-digit number');
-    return isValid;
-  };
-
   const validateName = () => {
     const isValid = /^[A-Za-z]{4,8}$/.test(name);
     setNameError(isValid ? '' : 'Name must be between 4 and 8 alphabets');
@@ -50,28 +42,28 @@ export default function Roompop({ close }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Room Details:', { name, roomName, numPlayers, numDecks });
-    socket.emit('createRoom' , {
+    socket.emit('playOnline' , {
       name : name,
-      room : Number(roomName),
       players : numPlayers,
       decks : numDecks
     })
-    socket.on('roomAlreadyExists' , ({message}) => {
-      console.log(message);
-      setError(message)
-    })
   };
 
-  socket.on('roomCreated' , () => {
-    dispatch(setState({name , roomName , numPlayers , numDecks , host : true}));
+  socket.on('onlineRoomCreated' , ({roomId}) => {
+    dispatch(setState({name, roomName : roomId , numPlayers , numDecks , host : true}));
+    setError("");
+    navigate('/custom-room')
+  })
+
+  socket.on('roomJoined', ({name , roomName , numPlayers , numDecks}) => {
+    dispatch(setState({name , roomName , numPlayers , numDecks , host : false}));
     setError("");
     navigate('/custom-room')
   })
 
   useEffect(() => {
-    setIsValid(validateRoomName() && validateName());
-  }, [roomName, name , numPlayers , numDecks ]);
+    setIsValid(validateName());
+  }, [name , numPlayers , numDecks ]);
 
   useEffect(() => {
     if(numPlayers === 5 || numPlayers === 6)
@@ -85,24 +77,9 @@ export default function Roompop({ close }) {
       <div className='z-30 fixed top-[20vh] left-[30vw] flex justify-center items-center'>
         <div className='bg-emerald-100 pb-10 w-[40vw] rounded-xl relative'>
           <img onClick={() => close(false)} src="/xmark.svg" className='absolute top-[-5px] right-[-10px] h-8 w-10' />
-          <h1 className='bg-emerald-700 rounded-t-xl text-center text-emerald-100 text-4xl font-semibold py-4'>Create Room</h1>
+          <h1 className='bg-emerald-700 rounded-t-xl text-center text-emerald-100 text-4xl font-semibold py-4'>Play online</h1>
           <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto bg-emerald-100 rounded-b-lg">
-            <div className="mb-4">
-              <label htmlFor="roomName" className="block text-emerald-800 font-semibold mb-2">
-                Room Name:
-              </label>
-              <input
-                type="text"
-                id="roomName"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                onBlur={validateRoomName}
-                required
-                className="w-full p-2 border border-emerald-400 rounded-md focus:outline-none focus:ring focus:ring-emerald-300"
-              />
-              {roomNameError && <p className="text-red-600 text-sm">{roomNameError}</p>}
-            </div>
-
+            
             <div className="mb-4">
               <label htmlFor="name" className="block text-emerald-800 font-semibold mb-2">
                 Name: (between 4 and 8 alphabets)
@@ -162,7 +139,7 @@ export default function Roompop({ close }) {
               disabled={!isValid}
               className={`w-full p-2 rounded-md transition ${isValid ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-gray-400 text-gray-800 cursor-not-allowed'}`}
             >
-              Create Room
+              Play Online
             </button>
             {
               error ? <p className="text-red-600">{error}</p> : null

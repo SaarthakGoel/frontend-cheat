@@ -20,7 +20,7 @@ export default function CustomRoom() {
   const roomData = useSelector((state => state.room));
   const gameData = useSelector(state => state.gameData);
 
-  console.log(gameData)
+  console.log(roomData)
 
   const [players, setPlayers] = useState(Array.from({ length: roomData.playerNo - 1 }, (_, i) => `Player ${i + 1}`));
   const [win, setWin] = useState(false);
@@ -62,9 +62,24 @@ export default function CustomRoom() {
 
   // Room Socket Logic
   socket.on('playerJoined', ({ playerName }) => {
-    dispatch(setPlayerNames({ playerName }));
-    setPlayers(handleNameAssign(playerName, players));
+    dispatch(setPlayerNames({ playerNames : playerName }));
+    const x = handleNameAssign(playerName, players);
+    console.log(x);
+    setPlayers(x);
   });
+
+
+  socket.on('onlineJoined' , ({playerNames}) => {
+    console.log("this is working Congrats!")
+    console.log(playerNames);
+    dispatch(setPlayerNames({ playerNames }));
+    const x = handleNameAssign(playerNames, players);
+    console.log(x);
+    setPlayers(x);
+  })
+
+
+  console.log( "Global players state" , players)
 
   socket.on('playerLeft', ({ playerName }) => {
     dispatch(setPlayerNames({ playerName }));
@@ -72,6 +87,7 @@ export default function CustomRoom() {
   });
 
   function handleNameAssign(playerNames, players) {
+    console.log( "in fuction" , playerNames , players , roomData.name)
     const myIndex = playerNames.indexOf(roomData.name);
 
     if (myIndex === -1) {
@@ -83,6 +99,8 @@ export default function CustomRoom() {
       ...playerNames.slice(myIndex + 1),
       ...playerNames.slice(0, myIndex),
     ];
+
+    console.log( "ordered names" , orderedNames)
 
     const updatedPlayers = players.map((_, index) => {
       return orderedNames[index] || players[index];
@@ -246,7 +264,7 @@ export default function CustomRoom() {
           <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
             {/* Players */}
             {players.map((player, index) => {
-              const playerPositions = getPlayerPositions(players.length);
+              const playerPositions = getPlayerPositions(roomData.playerNo-1);
               return (
                 <div
                   key={index}
@@ -388,18 +406,18 @@ export default function CustomRoom() {
                 style={{ gridColumnStart: 1, gridRowStart: 6 }}
               >
                 <button
-                  disabled={roomData.playerNames.length !== roomData.playerNo || roomData.host !== true}
+                  disabled={roomData.playerNames?.length !== roomData.playerNo || roomData.host !== true}
                   onClick={handleStartGame}
                   className="bg-emerald-900 rounded-full text-2xl font-semibold text-emerald-100 px-8 py-3 hover:bg-white hover:text-emerald-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Start Game
                 </button>
                 <p className="text-lg text-pretty font-semibold">
-                  No of players in room : {roomData.playerNames.length}/{roomData.playerNo}
+                  No of players in room : {roomData.playerNames?.length}/{roomData.playerNo}
                 </p>
                 <p className="text-lg text-pretty font-semibold">Room Id : {roomData.roomId}</p>
                 <p className="text-pretty font-semibold">
-                  {roomData.playerNames.length === roomData.playerNo
+                  {roomData.playerNames?.length === roomData.playerNo
                     ? 'Wait for the host to start the game'
                     : 'Waiting for other players'}
                 </p>

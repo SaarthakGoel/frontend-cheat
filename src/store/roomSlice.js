@@ -24,8 +24,8 @@ const roomSlice = createSlice({
       state.host = host;
     },
     setPlayerNames : (state , action) => {
-      const {playerName} = action.payload;
-      state.playerNames = playerName;
+      const {playerNames} = action.payload;
+      state.playerNames = playerNames;
     }
   }
 })
