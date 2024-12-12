@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import Roompop from './Roompop';
 import Roompop2 from './Roompop2';
 import PlayOnlinePop from './playOnilnePop';
+import RobotPop from './robotPop';
 
 export default function Hero() {
 
   const [pop1 , setPop1] = useState(false);
   const [pop2 , setPop2] = useState(false);
   const [pop3 , setPop3] = useState(false);
+  const [pop4 , setPop4] = useState(false);
 
   return (
     <div className="bg-emerald-900 min-h-screen">
@@ -19,6 +21,9 @@ export default function Hero() {
       }
       {
         pop3 ? <PlayOnlinePop close={setPop3} /> : null
+      }
+      {
+        pop4 ? <RobotPop close={setPop4} /> : null 
       }
       <div className='bg-emerald-900 z-10 flex gap-40 justify-center items-center fixed top-0 right-0 left-0'>
         <button className="bg-emerald-900 font-bold text-white text-xl px-10 py-4 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
@@ -39,7 +44,7 @@ export default function Hero() {
             <button onClick={() => setPop3(true)} className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
               Play Online
             </button>
-            <button className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
+            <button onClick={() => setPop4(true)} className="bg-emerald-400 text-black text-xl px-10 py-4 sm:py-5 rounded-full hover:text-white hover:bg-emerald-900 transition-all duration-300">
               Play Computer
             </button>
           </div>

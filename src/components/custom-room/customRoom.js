@@ -379,7 +379,7 @@ export default function CustomRoom() {
                     onClick={doubtHandler}
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    I Doubt
+                    Cheat!
                   </button>
                   <button
                     onClick={throwHandler}
@@ -393,7 +393,7 @@ export default function CustomRoom() {
                     onClick={skipChanceHandler}
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Skip
+                    Pass
                   </button>
                 </div>
               )
