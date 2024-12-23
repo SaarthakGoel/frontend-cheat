@@ -49,5 +49,6 @@ const namesList = [
 //animate other players throwing 
 
 
-// remove cards after cheat from allCardsThrown
+// fix cardsInMiddle
+// setTime out inserts
 // adjust probablities

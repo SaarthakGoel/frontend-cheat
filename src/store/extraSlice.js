@@ -10,7 +10,7 @@ const extraGameSlice = createSlice({
   reducers : {
      setShuffleArr : (state , action) => {
       const {shuffledArr} = action.payload;
-      state.shuffledArr = shuffledArr;
+      state.shuffledArr = [...shuffledArr];
      },
   }
 })

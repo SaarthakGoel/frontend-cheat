@@ -7,7 +7,7 @@ import DoubtCard from '../doubt-card/doubtCard';
 import { shuffle } from 'lodash';
 import { getPlayerPositions } from '../constants/playerPositions';
 import RankCard from '../rankCard/rankCard';
-import { setComputerState } from '../../store/computerGameSlice';
+import { setPlayers, setTurn, setPrev, setSkip, setWon, setCurrentFace, setCardsInMiddle, setCardsInLastChance, } from '../../store/computerGameSlice';
 import { setShuffleArr } from '../../store/extraSlice';
 
 
@@ -17,10 +17,11 @@ export default function ComputerRoom() {
   const computerGameData = useSelector(state => state.computerGameData);
   const extraData = useSelector(state => state.extraGameData);
   console.log(computerGameData)
+  console.log(extraData);
 
   const [selectedCards, setSelectedCards] = useState([]); // State for selected cards
   const [doubtChance, setDoubtChance] = useState(false);
-  const [flipedCard, setflipedCard] = useState(null);
+  const [flipedCard, setFlipedCard] = useState(null);
   const [mainMessage, setMainMessage] = useState("");
   const [isSkipped, setIsSkipped] = useState(false);
   const [isPrevOnly, setIsPrevOnly] = useState(false);
@@ -44,201 +45,203 @@ export default function ComputerRoom() {
   };
 
 
-  function handleFaceClick(face, Index, selectedCards) {
-    console.log(`face chance played by index ${Index}`)
-    setFaceCardAnimation(true);
+  function handleFaceClick(face, index, selectedCards) {
+    console.log(`Face chance played by player ${index}`);
 
-    let localState = structuredClone(computerGameData);
+    const localPlayers = [...computerGameData.players];
+    const updatedPlayerCards = localPlayers[index].cards.filter(
+      (card) => !selectedCards.includes(card)
+    );
+    localPlayers[index] = { ...localPlayers[index], cards: updatedPlayerCards };
 
-    localState.players[Index].cards = localState.players[Index].cards.filter((card) => !selectedCards.includes(card));
-
-    localState.cardsInLastChance = selectedCards;
+    dispatch(setPlayers(localPlayers));
+    dispatch(setCardsInLastChance(selectedCards));
     setAllThrownCards((prev) => [...prev, ...selectedCards]);
-    if (localState.cardsInMiddle === null) {
-      localState.cardsInMiddle = selectedCards;
-    } else {
-      localState.cardsInMiddle = [...localState.cardsInMiddle, ...selectedCards]
+
+    dispatch(setCardsInMiddle(selectedCards));
+
+    dispatch(setPrev(index));
+    dispatch(setCurrentFace(face));
+
+    let nextPlayerIndex = (index + 1) % localPlayers.length;
+    while (computerGameData.won[nextPlayerIndex] > 0) {
+      nextPlayerIndex = (nextPlayerIndex + 1) % localPlayers.length;
     }
 
-    localState.prev = Index;
-    localState.currentFace = face;
+    dispatch(setTurn(nextPlayerIndex));
 
-    let nextPlayerIndex = (Index + 1) % localState.players.length;
-    while (localState.won[nextPlayerIndex] > 0) {
-      nextPlayerIndex = (nextPlayerIndex + 1) % localState.players.length;
-    }
-
-    localState.turn = nextPlayerIndex;
-
-    setMainMessage(`${localState.players[Index].playerName} threw ${selectedCards.length} ${findFaceName(localState.currentFace)}`);
+    setMainMessage(
+      `${localPlayers[index].playerName} threw ${selectedCards.length} ${findFaceName(
+        face
+      )}`
+    );
     setSelectedCards([]);
     setFaceCardAnimation(false);
-    dispatch(setComputerState({ localState }));
-
   }
 
+  function throwHandler(index, selectedCards) {
+    console.log(`Throw chance played by player ${index}`);
 
-  function throwHandler(Index, selectedCards) {
-    console.log(`throw chance played by index ${Index}`)
-    setFaceCardAnimation(true);
+    const localPlayers = [...computerGameData.players];
+    const updatedPlayerCards = localPlayers[index].cards.filter(
+      (card) => !selectedCards.includes(card)
+    );
+    localPlayers[index] = { ...localPlayers[index], cards: updatedPlayerCards };
 
-    let localState = structuredClone(computerGameData)
-
-    localState.players[Index].cards = localState.players[Index].cards.filter((card) => !selectedCards.includes(card));
-
-    localState.cardsInLastChance = selectedCards;
+    dispatch(setPlayers(localPlayers));
+    dispatch(setCardsInLastChance(selectedCards));
     setAllThrownCards((prev) => [...prev, ...selectedCards]);
-    if (localState.cardsInMiddle === null) {
-      localState.cardsInMiddle = selectedCards;
+
+    if (!computerGameData.cardsInMiddle.length) {
+      dispatch(setCardsInMiddle(selectedCards));
     } else {
-      localState.cardsInMiddle = [...localState.cardsInMiddle, ...selectedCards]
+      dispatch(
+        setCardsInMiddle([...computerGameData.cardsInMiddle, ...selectedCards])
+      );
     }
 
-    localState.prev = Index;
-    let nextPlayerIndex = (Index + 1) % localState.players.length;
+    dispatch(setPrev(index));
 
-    while (localState.won[nextPlayerIndex] > 0) {
-      nextPlayerIndex = (nextPlayerIndex + 1) % localState.players.length;
+    let nextPlayerIndex = (index + 1) % localPlayers.length;
+    while (computerGameData.won[nextPlayerIndex] > 0) {
+      nextPlayerIndex = (nextPlayerIndex + 1) % localPlayers.length;
     }
 
-    localState.turn = nextPlayerIndex;
+    dispatch(setTurn(nextPlayerIndex));
 
-    setMainMessage(`${localState.players[Index].playerName} threw ${selectedCards.length} ${findFaceName(localState.currentFace)}`);
-    setFaceCardAnimation(false);
+    setMainMessage(
+      `${localPlayers[index].playerName} threw ${selectedCards.length} ${findFaceName(
+        computerGameData.currentFace
+      )}`
+    );
     setSelectedCards([]);
-    dispatch(setComputerState({ localState }));
-
+    setFaceCardAnimation(false);
   }
 
+  function skipChanceHandler(index) {
+    console.log(`Skip chance played by player ${index}`);
 
+    const updatedSkip = [...computerGameData.skip];
+    updatedSkip[index] = 1;
 
-  function skipChanceHandler(Index) {
-    console.log(`skip chance played by index ${Index}`)
+    dispatch(setSkip(updatedSkip));
 
-    let localState = structuredClone(computerGameData)
-    localState.skip[Index] = 1;
-
-    if (Math.min(...localState.skip) === 1) {
-      let nextPlayerIndex = (Index + 1) % localState.players.length;
-      while (localState.won[nextPlayerIndex] > 0) {
-        nextPlayerIndex = (nextPlayerIndex + 1) % localState.players.length;
-        if (nextPlayerIndex === Index) {
-          return;
-        }
+    if (Math.min(...updatedSkip) === 1) {
+      let nextPlayerIndex = (index + 1) % computerGameData.players.length;
+      while (computerGameData.won[nextPlayerIndex] > 0) {
+        nextPlayerIndex = (nextPlayerIndex + 1) % computerGameData.players.length;
       }
 
-      localState.turn = nextPlayerIndex;
-      localState.prev = null;
-      localState.skip = localState.won.map((x) => x >= 1);
-      localState.currentFace = null;
-      localState.cardsInMiddle = [];
-      localState.cardsInLastChance = [];
-
-      dispatch(setComputerState({ localState }));
-      setMainMessage(`${localState.players[Index].playerName} has skipped`);
-
+      dispatch(setTurn(nextPlayerIndex));
+      dispatch(setPrev(null));
+      dispatch(setSkip(computerGameData.won.map((x) => x >= 1)));
+      dispatch(setCurrentFace(null));
+      dispatch(setCardsInMiddle([]));
+      dispatch(setCardsInLastChance([]));
     } else {
-
-      let nextPlayerIndex = (Index + 1) % localState.players.length;
-      while (localState.won[nextPlayerIndex] > 0) {
-        nextPlayerIndex = (nextPlayerIndex + 1) % localState.players.length;
-        if (nextPlayerIndex === Index) {
-          return;
-        }
+      let nextPlayerIndex = (index + 1) % computerGameData.players.length;
+      while (computerGameData.won[nextPlayerIndex] > 0) {
+        nextPlayerIndex = (nextPlayerIndex + 1) % computerGameData.players.length;
       }
 
-      localState.turn = nextPlayerIndex;
-      setMainMessage(`${localState.players[Index].playerName} has skipped`);
-
-      dispatch(setComputerState({ localState }));
-
+      dispatch(setTurn(nextPlayerIndex));
+      setMainMessage(`${computerGameData.players[index].playerName} has skipped`);
     }
   }
 
-  function doubtHandler(Index) {
-    console.log(`doubt chance played by index ${Index}`)
+  function doubtHandler(index) {
+    console.log(`Doubt chance played by player ${index}`);
 
-    let localState = structuredClone(computerGameData)
-    setMainMessage(`${localState.players[Index].playerName} has Doubted ${localState.players[localState.prev].playerName}`);
-    const shuffledArr = shuffle(computerGameData.cardsInLastChance)
+    setMainMessage(
+      `${computerGameData.players[index].playerName} has doubted ${computerGameData.players[computerGameData.prev].playerName}`
+    );
+
+    const shuffledArr = shuffle(computerGameData.cardsInLastChance);
     dispatch(setShuffleArr({ shuffledArr }));
+    dispatch(setCardsInLastChance(shuffledArr));
     setDoubtChance(true);
   }
 
-  const handleFlip = (item, Index) => {
-    console.log(`flip done by index ${Index}`)
-    setflipedCard(item);
 
-    let localState = structuredClone(computerGameData)
+  const handleFlip = (item, index) => {
+    console.log(`Card flipped by player ${index}`);
+    setFlipedCard(item);
 
-    if (localState.currentFace === item) {
-      const newCards = [...computerGameData.players[Index].cards, ...computerGameData.cardsInMiddle];
-      newCards.sort((a, b) => a.localeCompare(b));
-      localState.players[Index].cards = newCards;
+    const localPlayers = [...computerGameData.players];
 
-      let nextPlayerIndex = (Index + 1) % localState.players.length;
-      while (localState.won[nextPlayerIndex] > 0) {
-        nextPlayerIndex = (nextPlayerIndex + 1) % localState.players.length;
-        if (nextPlayerIndex === Index) {
-          return;
-        }
+    if (computerGameData.currentFace === item[0]) {
+      const updatedCards = [
+        ...localPlayers[index].cards,
+        ...computerGameData.cardsInMiddle,
+      ];
+
+      updatedCards.sort((a, b) => a.localeCompare(b));
+      localPlayers[index] = { ...localPlayers[index], cards: updatedCards };
+      dispatch(setPlayers(localPlayers));
+
+      let nextPlayerIndex = (index + 1) % localPlayers.length;
+      while (computerGameData.won[nextPlayerIndex] > 0) {
+        nextPlayerIndex = (nextPlayerIndex + 1) % localPlayers.length;
       }
 
-      localState.turn = nextPlayerIndex;
-      localState.won = localState.players.map((player) => {
-        if (player.cards.length === 0) {
-          return 1;
-        } else {
-          return 0;
-        }
-      })
-      localState.skip = localState.won.map((x) => x === 1);
+      dispatch(setTurn(nextPlayerIndex));
 
-      setMainMessage(`Wrong Call! , ${localState.players[localState.prev].playerName} was truthfull`);
-      const newAllTHrownCards = allThrownCards?.filter((card) => !localState.cardsInMiddle.includes(card));
-      setAllThrownCards(newAllTHrownCards);
+      const updatedWon = localPlayers.map((player) =>
+        player.cards.length === 0 ? 1 : 0
+      );
+      dispatch(setWon(updatedWon));
 
-      localState.prev = null;
-      localState.currentFace = null;
-      localState.cardsInMiddle = [];
-      localState.cardsInLastChance = [];
+      const newAllThrownCards = allThrownCards.filter(
+        (card) => !computerGameData.cardsInMiddle.includes(card)
+      );
+      setAllThrownCards(newAllThrownCards);
 
-      dispatch(setComputerState({ localState }));
-    }
+      dispatch(setPrev(null));
+      dispatch(setCurrentFace(null));
+      dispatch(setCardsInMiddle([]));
+      dispatch(setCardsInLastChance([]));
 
-    else {
+      setMainMessage(
+        `Wrong Call! ${computerGameData.players[computerGameData.prev].playerName} was truthful.`
+      );
+    } else {
+      const prevIndex = computerGameData.prev;
+      const updatedCards = [
+        ...localPlayers[prevIndex].cards,
+        ...computerGameData.cardsInMiddle,
+      ];
 
-      const prevIndex = localState.prev;
-      const newCards = [...computerGameData.players[prevIndex].cards, ...computerGameData.cardsInMiddle];
-      newCards.sort((a, b) => a.localeCompare(b));
-      localState.players[prevIndex].cards = newCards;
+      updatedCards.sort((a, b) => a.localeCompare(b));
+      localPlayers[prevIndex] = {
+        ...localPlayers[prevIndex],
+        cards: updatedCards,
+      };
+      dispatch(setPlayers(localPlayers));
 
-      localState.won = localState.players.map((player) => {
-        if (player.cards.length === 0) {
-          return 1;
-        } else {
-          return 0;
-        }
-      })
+      const updatedWon = localPlayers.map((player) =>
+        player.cards.length === 0 ? 1 : 0
+      );
+      dispatch(setWon(updatedWon));
 
-      localState.skip = localState.won.map((x) => x === 1);
+      const newAllThrownCards = allThrownCards.filter(
+        (card) => !computerGameData.cardsInMiddle.includes(card)
+      );
+      setAllThrownCards(newAllThrownCards);
 
-      setMainMessage(`Good Call! , ${localState.players[prevIndex].playerName} was lying`);
-      const newAllTHrownCards = allThrownCards?.filter((card) => !localState.cardsInMiddle.includes(card));
-      setAllThrownCards(newAllTHrownCards);
+      dispatch(setPrev(null));
+      dispatch(setCurrentFace(null));
+      dispatch(setCardsInMiddle([]));
+      dispatch(setCardsInLastChance([]));
 
-      localState.prev = null;
-      localState.currentFace = null;
-      localState.cardsInMiddle = [];
-      localState.cardsInLastChance = [];
-
-      dispatch(setComputerState({ localState }));
-
+      setMainMessage(
+        `Good Call! ${computerGameData.players[prevIndex].playerName} was lying.`
+      );
     }
     setDoubtChance(false);
-    setflipedCard(null);
-
+    setFlipedCard(null);
+    setSelectedCards([]);
   };
+
 
 
   const otherPlayers = computerGameData?.players.filter((player, index) => index !== 0);
@@ -332,31 +335,31 @@ export default function ComputerRoom() {
 
       console.log("cheat prob", cheatProb)
 
-      if (cheatProb > 0.5) {
+      if (cheatProb > 0.1) {
         doubtHandler(index);
         console.log(extraData.shuffledArr);
         const chanceIndex = Math.floor((Math.random() * extraData.shuffledArr.length));
 
-          console.log(chanceIndex)
-          handleFlip(extraData.shuffledArr[chanceIndex], index);
+        console.log(chanceIndex)
+        handleFlip(extraData.shuffledArr[chanceIndex], index);
 
         //faceChance
-        if(computerGameData.turn === index){
+        if (computerGameData.turn === index) {
           const botCardsFreq = countFaceFrequency(botCards);
           const maxFace = Object.keys(botCardsFreq).reduce((max, current) =>
             botCardsFreq[current] > botCardsFreq[max] ? current : max
           );
-  
+
           cardsOfFaceInHand = botCards.filter((card) => card[0] === maxFace);
-  
+
           const lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.7 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)));
-  
+
           if (lieProbablity > 0.5) {
-  
+
             const lieFace = selectLieCardFace(botCards, totalCardsPerFace);
-  
+
             const lieCard = botCards.filter((card) => card[0] === lieFace);
-  
+
             const chance = Math.random();
             let selectedCards = [];
             if (chance <= 0.33) {
@@ -367,17 +370,17 @@ export default function ComputerRoom() {
               const halfCards = cardsOfFaceInHand.slice(0, Math.ceil(cardsOfFaceInHand.length / 2));
               selectedCards = [...halfCards, lieCard[0]];
             }
-  
+
             handleFaceClick(maxFace, index, selectedCards);
-  
+
           } else {
             const selectedCards = cardsOfFaceInHand;
             handleFaceClick(maxFace, index, selectedCards);
           }
         }
-        
+
         return;
-        
+
       }
 
     }
@@ -582,7 +585,7 @@ export default function ComputerRoom() {
                 className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative"
                 style={{ gridColumnStart: 1, gridRowStart: 6 }}
               >
-                {extraData.shuffledArr.map(item => (
+                {extraData.shuffledArr?.map(item => (
                   <button key={item} disabled={computerGameData.turn !== 0} onClick={() => handleFlip(item, 0)}>
                     <DoubtCard flipedCard={flipedCard === item} imgSrc={item} />
                   </button>
