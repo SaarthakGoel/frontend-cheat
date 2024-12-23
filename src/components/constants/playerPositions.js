@@ -1,5 +1,4 @@
 export function getPlayerPositions(num){
-  console.log(num)
    if(num === 2){
     const ans =  [
       { colStart: 3, rowStart: 1 },

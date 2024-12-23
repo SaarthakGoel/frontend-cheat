@@ -1,8 +1,9 @@
-import React, { useState , useEffect } from 'react';
-import { useNavigate} from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import socket from '../../socket/socket';
 import { useDispatch } from 'react-redux';
-import { setState } from '../../store/roomSlice';
+import { getRandomNames } from '../constants/cardFaces';
+import { setComputerGameState } from '../../store/computerGameSlice';
 
 export default function RobotPop({ close }) {
 
@@ -13,7 +14,7 @@ export default function RobotPop({ close }) {
   const [numDecks, setNumDecks] = useState(1);
   const [nameError, setNameError] = useState('');
   const [isValid, setIsValid] = useState(false);
-  const [error , setError] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -42,33 +43,81 @@ export default function RobotPop({ close }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    socket.emit('playOnline' , {
-      name : name,
-      players : numPlayers,
-      decks : numDecks
+
+    const cardQuantity = Math.floor(((52 * numDecks) / numPlayers));
+    const myCards = Math.ceil(((52 * numDecks) / numPlayers));
+
+    let namesArr = getRandomNames(numPlayers - 1);
+
+    function getAllCards(noOfDecks) {
+      const suits = ["S", "H", "D", "C"]; // Spades, Hearts, Diamonds, Clubs
+      const ranks = [
+        "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"
+      ]; // Card ranks
+      const cards = [];
+
+      for (let deck = 1; deck <= noOfDecks; deck++) {
+        for (const suit of suits) {
+          for (const rank of ranks) {
+            cards.push(`${rank}${suit}${deck}`);
+          }
+        }
+      }
+
+      return cards;
+    }
+
+    const allCards = getAllCards(numDecks);
+
+    function selectRandomCards(allCards, numberOfCards) {
+      if (numberOfCards > allCards.length) {
+        throw new Error("Not enough cards in the deck to draw the requested number.");
+      }
+
+      const selectedCards = [];
+      for (let i = 0; i < numberOfCards; i++) {
+        const randomIndex = Math.floor(Math.random() * allCards.length);
+        selectedCards.push(allCards[randomIndex]);
+        allCards.splice(randomIndex, 1); // Remove the selected card from the array
+      }
+
+      return selectedCards.sort((a, b) => a.localeCompare(b));
+    }
+
+    namesArr = [name, ...namesArr];
+
+    const players = namesArr.map((item, index) => {
+      if (index === 0) {
+        return {
+          playerName: item,
+          playerIndex: index,
+          cards: selectRandomCards(allCards, myCards)
+        }
+      } else {
+        return {
+          playerName: item,
+          playerIndex: index,
+          cards: selectRandomCards(allCards, cardQuantity)
+        }
+      }
     })
+
+    const skip = players.map(() => 0);
+    const won = players.map(() => 0);
+
+    dispatch(setComputerGameState({ players, turn: 0, skip, won }));
+
+    navigate('/computer-room');
   };
-
-  socket.on('onlineRoomCreated' , ({roomId}) => {
-    dispatch(setState({name, roomName : roomId , numPlayers , numDecks , host : true}));
-    setError("");
-    navigate('/custom-room')
-  })
-
-  socket.on('roomJoined', ({name , roomName , numPlayers , numDecks}) => {
-    dispatch(setState({name , roomName , numPlayers , numDecks , host : false}));
-    setError("");
-    navigate('/custom-room')
-  })
 
   useEffect(() => {
     setIsValid(validateName());
-  }, [name , numPlayers , numDecks ]);
+  }, [name, numPlayers, numDecks]);
 
   useEffect(() => {
-    if(numPlayers === 5 || numPlayers === 6)
-    setNumDecks(2)
-  },[numPlayers])
+    if (numPlayers === 5 || numPlayers === 6)
+      setNumDecks(2)
+  }, [numPlayers])
 
   return (
     <div>
@@ -79,7 +128,7 @@ export default function RobotPop({ close }) {
           <img onClick={() => close(false)} src="/xmark.svg" className='absolute top-[-5px] right-[-10px] h-8 w-10' />
           <h1 className='bg-emerald-700 rounded-t-xl text-center text-emerald-100 text-4xl font-semibold py-4'>Play Vs Computer</h1>
           <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto bg-emerald-100 rounded-b-lg">
-            
+
             <div className="mb-4">
               <label htmlFor="name" className="block text-emerald-800 font-semibold mb-2">
                 Name: (between 4 and 8 alphabets)
