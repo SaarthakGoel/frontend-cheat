@@ -19,15 +19,12 @@ export default function ComputerRoom() {
   console.log(computerGameData)
   console.log(extraData);
 
-  const [selectedCards, setSelectedCards] = useState([]); // State for selected cards
+  const [selectedCards, setSelectedCards] = useState([]);
   const [doubtChance, setDoubtChance] = useState(false);
   const [flipedCard, setFlipedCard] = useState(null);
   const [mainMessage, setMainMessage] = useState("");
-  const [isSkipped, setIsSkipped] = useState(false);
-  const [isPrevOnly, setIsPrevOnly] = useState(false);
   const [ranking, setRanking] = useState(null);
   const [cheatComplete , setCheatCompelte] = useState(false);
- 
   const [allThrownCards, setAllThrownCards] = useState([]);
   console.log('all thrown cards', allThrownCards)
 
@@ -196,11 +193,6 @@ export default function ComputerRoom() {
 
       dispatch(setTurn(nextPlayerIndex));
 
-      const updatedWon = localPlayers.map((player) =>
-        player.cards.length === 0 ? 1 : 0
-      );
-      dispatch(setWon(updatedWon));
-
       const newAllThrownCards = allThrownCards.filter(
         (card) => !computerGameData.cardsInMiddle.includes(card)
       );
@@ -210,6 +202,7 @@ export default function ComputerRoom() {
       dispatch(setCurrentFace(null));
       dispatch(setCardsInMiddle([]));
       dispatch(setCardsInLastChance([]));
+      dispatch(setSkip(computerGameData.won.map((x) => x >= 1)));
 
       setMainMessage(
         `Wrong Call! ${computerGameData.players[computerGameData.prev].playerName} was truthful.`
@@ -228,11 +221,6 @@ export default function ComputerRoom() {
       };
       dispatch(setPlayers(localPlayers));
 
-      const updatedWon = localPlayers.map((player) =>
-        player.cards.length === 0 ? 1 : 0
-      );
-      dispatch(setWon(updatedWon));
-
       const newAllThrownCards = allThrownCards.filter(
         (card) => !computerGameData.cardsInMiddle.includes(card)
       );
@@ -242,6 +230,7 @@ export default function ComputerRoom() {
       dispatch(setCurrentFace(null));
       dispatch(setCardsInMiddle([]));
       dispatch(setCardsInLastChance([]));
+      dispatch(setSkip(computerGameData.won.map((x) => x >= 1)));
 
       setMainMessage(
         `Good Call! ${computerGameData.players[prevIndex].playerName} was lying.`
@@ -251,6 +240,47 @@ export default function ComputerRoom() {
     setFlipedCard(null);
     setSelectedCards([]);
   };
+
+
+  function playIwon(Index){
+
+    setMainMessage(`${computerGameData.players[Index].playerName} has Won`);
+
+    const maxWonValue = Math.max(...computerGameData.won.map((val) => Number(val) || 0));
+
+    let won = [...computerGameData.won];
+    won[Index] = maxWonValue + 1;
+
+    const skip = won.map((x) => x >= 1);
+
+    let nextPlayerIndex = (Index+1) % computerGameData.players.length;
+    while(won[nextPlayerIndex]){
+      nextPlayerIndex = (nextPlayerIndex + 1) % computerGameData.players.length;
+    }
+
+    dispatch(setTurn(nextPlayerIndex));
+    dispatch(setPrev(null));
+    dispatch(setSkip(skip));
+    dispatch(setCurrentFace(null));
+    dispatch(setCardsInMiddle([]));
+    dispatch(setCardsInLastChance([]));
+
+    let updatedWon;
+
+    if (won.filter((x) => x === 0).length === 1) {
+      updatedWon = [...won]; // Create a mutable copy of the won array
+      const rankData = computerGameData.players.map((player, index) => {
+        if (updatedWon[index] === 0) {
+          updatedWon[index] = computerGameData.players.length;
+        }
+        return { name: player.playerName, rank: updatedWon[index] };
+      });
+    
+      rankData.sort((a, b) => a.rank - b.rank);
+      setRanking(rankData);
+    }
+    dispatch(setWon(updatedWon));
+  }
 
 
 
@@ -297,6 +327,11 @@ export default function ComputerRoom() {
 
     const botCards = computerGameData.players[index].cards;
     const totalCardsPerFace = 4 * decks;
+
+    if(botCards.length === 0){
+       playIwon(index);
+       return;
+    }
 
     let cardsOfFaceInHand = botCards.filter((card) => card[0] === face);
     const allThrownCardsOfFace = allThrownCards.filter((card) => card[0] === face);
@@ -364,6 +399,11 @@ export default function ComputerRoom() {
 
       }
 
+    }
+
+    if(computerGameData.skip[index]){
+      skipChanceHandler(index);
+      return;
     }
 
     const lieProbablity = (0.2 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.6 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)));
@@ -510,6 +550,7 @@ export default function ComputerRoom() {
                 >
                   <button
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+                    onClick={() => playIwon(0)}
                   >
                     I WON
                   </button>
@@ -536,7 +577,7 @@ export default function ComputerRoom() {
                   style={{ gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
-                    disabled={isPrevOnly || doubtChance}
+                    disabled={computerGameData.prev === 0 || doubtChance}
                     onClick={() => doubtHandler(computerGameData.turn)}
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -544,7 +585,7 @@ export default function ComputerRoom() {
                   </button>
                   <button
                     onClick={() => throwHandler(computerGameData.turn, selectedCards)}
-                    disabled={isSkipped || doubtChance}
+                    disabled={computerGameData.skip[0] || doubtChance}
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Throw

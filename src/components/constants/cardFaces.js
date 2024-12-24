@@ -51,5 +51,5 @@ const namesList = [
 
 
 // setTime out inserts
-// adjust probablities
+// adjust probablities and dynamic probabalites acc to no of players plaing 
 // fix more than 4 cards thrown

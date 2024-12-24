@@ -74,8 +74,8 @@ export default function PlayOnlinePop({ close }) {
     <div>
       <div onClick={() => close(false)} className='z-20 fixed h-screen w-full bg-white opacity-50'>
       </div>
-      <div className='z-30 fixed top-[20vh] left-[30vw] flex justify-center items-center'>
-        <div className='bg-emerald-100 pb-10 w-[40vw] rounded-xl relative'>
+      <div className='z-30 fixed top-[20vh] left-[10vw] md:left-[20vw] lg:left-[30vw] flex justify-center items-center'>
+        <div className='bg-emerald-100 pb-10 w-[80vw] md:w-[60vw] lg:w-[40vw] rounded-xl relative'>
           <img onClick={() => close(false)} src="/xmark.svg" className='absolute top-[-5px] right-[-10px] h-8 w-10' />
           <h1 className='bg-emerald-700 rounded-t-xl text-center text-emerald-100 text-4xl font-semibold py-4'>Play online</h1>
           <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto bg-emerald-100 rounded-b-lg">
