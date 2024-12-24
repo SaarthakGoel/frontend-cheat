@@ -49,6 +49,7 @@ const namesList = [
 //animate other players throwing 
 
 
-// fix cardsInMiddle
+
 // setTime out inserts
 // adjust probablities
+// fix more than 4 cards thrown
