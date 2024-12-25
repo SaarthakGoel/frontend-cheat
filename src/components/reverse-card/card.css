@@ -1,12 +1,30 @@
 :root{
-  --card-width : 80px;
-  --card-height : 110px;
+  --card-width-lg : 80px;
+  --card-height-lg : 110px;
+  --card-width-md : 65px;
+  --card-height-md : 90px;
+  --card-width : 58px;
+  --card-height : 80px;
+}
+
+@media (max-width : 768px){
+  .card{
+    height: var(--card-height);
+    width: var(--card-width);
+  }
+}
+
+@media (min-width: 768px) and (max-width : 1024px) {
+  .card{
+    height: var(--card-height-md);
+    width: var(--card-width-md);
+  }
 }
 
 .card{
   position : absolute;
-  height: var(--card-height);
-  width: var(--card-width);
+  height: var(--card-height-lg);
+  width: var(--card-width-lg);
   perspective: 1000px;
   cursor: pointer;
 }

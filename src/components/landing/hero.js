@@ -26,11 +26,11 @@ export default function Hero() {
         pop4 ? <RobotPop close={setPop4} /> : null 
       }
       <div className='bg-emerald-900 z-10 flex gap-10 md:gap-20 lg:gap-40 justify-center items-center fixed top-0 right-0 left-0'>
-        <button className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-4 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
+        <button className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-2 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
           How To Play
         </button>
         <img src='/logo.jpg' className='h-auto w-[135px] md:w-[250px]' />
-        <button className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-4 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
+        <button className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-2 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
           Game Preview
         </button>
       </div>
