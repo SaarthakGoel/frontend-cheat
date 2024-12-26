@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import socket from "../../socket/socket";
+import './chat.css';
 
-export default function Chat() {
+export default function Chat({setChatPop}) {
+
+  const screenWidth = window.innerWidth;
+
   const [message, setMessage] = useState("");
   const [messageArr, setMessageArr] = useState([]);
 
@@ -49,11 +53,12 @@ export default function Chat() {
 
   return (
     <div
-      className="col-span-3 row-span-5 bg-emerald-100 rounded-md flex flex-col shadow-lg"
-      style={{ gridColumnStart: 10, gridRowStart: 5 }}
+      className="fixed top-[40%] right-[2px] h-[40vh] lg:static lg:h-auto lg:col-span-3 lg:row-span-5 bg-emerald-100 rounded-md flex flex-col shadow-lg animate"
+      style={screenWidth <= 1024 ? {} :{ gridColumnStart: 10, gridRowStart: 5 }}
     >
       {/* Header */}
-      <div className="w-full bg-emerald-200 text-emerald-900 font-bold text-lg py-3 px-4 rounded-t-md">
+      <div className="w-full bg-emerald-200 text-emerald-900 font-bold text-lg py-3 px-4 rounded-t-md relative">
+        {screenWidth <= 1024 ? <div className="absolute left-[-10px] top-[-10px]"><img onClick={() => setChatPop(false)} src="/xmark.svg" className="h-8 w-8" /></div> : null}
         Chat
       </div>
 
@@ -87,7 +92,7 @@ export default function Chat() {
         <button
           disabled={!message}
           onClick={handleChatSend}
-          className="ml-3 px-6 py-2 bg-emerald-600 text-white rounded-md shadow-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ml-3 px-2 xl:px-6 py-2 bg-emerald-600 text-white rounded-md shadow-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Send
         </button>

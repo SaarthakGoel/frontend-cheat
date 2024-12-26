@@ -22,8 +22,6 @@ export default function CustomRoom() {
   const screenWidth = window.innerWidth;
 
   console.log(roomData)
-  const playerPositions = getPlayerPositions(roomData.playerNo-1);
-  console.log("player positions" ,  playerPositions);
 
   const [players, setPlayers] = useState(Array.from({ length: roomData.playerNo - 1 }, (_, i) => `Player ${i + 1}`));
   const [win, setWin] = useState(false);
@@ -37,6 +35,7 @@ export default function CustomRoom() {
   const [isPrevOnly, setIsPrevOnly] = useState(false);
   const [ranking, setRanking] = useState(null);
   const [shuffledArr , setShuffledArr] = useState([]);
+  const [chatPop , setChatPop] = useState(false);
 
 
   //Animation states
@@ -281,7 +280,7 @@ export default function CustomRoom() {
                     <img src="/avatar.svg" alt="avatar" className="h-9 w-9 md:h-12 md:w-12 rounded-full" />
                   </div>
                   <p className="md:text-lg font-semibold">{player}</p>
-                  <div className="w-full flex space-x-1 md:space-x-3 absolute top-[100%]">
+                  <div className="w-full flex space-x-1 md:space-x-2 lg:space-x-3 absolute top-[100%]">
                     {gameData?.players
                       ?.find(item => item.playerName === player)
                       ?.cards?.map(i => (
@@ -306,9 +305,9 @@ export default function CustomRoom() {
                   alt="avatar"
                   className="h-12 w-12 lg:h-14 lg:w-14 absolute top-[-15px] left-[-50px] md:top-[-5px] md:left-[-25px] rounded-full border-[3px] border-emerald-800"
                 />
-                <p className="bg-emerald-50 min-w-52 md:min-w-72 lg:min-w-80 text-center text-lg p-1">{mainMessage}</p>
+                <p className="bg-emerald-50 min-w-52 md:min-w-72 lg:min-w-80 text-center text-base md:text-lg p-1">{mainMessage}</p>
               </div>
-              <div className="w-full flex space-x-4 md:space-x-6 absolute top-[50%] left-[-70%] md:left-[-25%]">
+              <div className="w-full flex space-x-[14px] md:space-x-4 lg:space-x-6 absolute top-[50%] left-[-120%] md:left-[-25%]">
                 {gameData?.players
                   ?.find(player => player.playerName === roomData.name)
                   ?.cards?.map(item => (
@@ -327,7 +326,7 @@ export default function CustomRoom() {
 
             {/*Middle Section*/}
             <div
-              className="col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
+              className="col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-[5px] md:space-x-2 lg:space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
               style={screenWidth <= 768 ? {gridColumnStart : 3 , gridRowStart : 6} : screenWidth <= 1024 ? {gridColumnStart : 4 , gridRowStart : 4} : { gridColumnStart: 5, gridRowStart: 4 }}
             >
                {
@@ -432,8 +431,8 @@ export default function CustomRoom() {
             {/* Doubt Section */}
             {doubtChance && (
               <div
-                className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative"
-                style={{ gridColumnStart: 1, gridRowStart: 6 }}
+                className="col-span-10 lg:col-span-3 row-span-2 flex gap-4 items-center w-full space-x-[70px] lg:space-x-20 relative"
+                style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 6 }:{ gridColumnStart: 1, gridRowStart: 6 }}
               >
                 {shuffledArr.map(item => (
                   <button key={item} disabled={gameData.turn !== socket.id} onClick={() => handleFlip(item)}>
@@ -444,7 +443,13 @@ export default function CustomRoom() {
             )}
 
             {/* Chat Component */}
-            {/*<Chat />*/}
+            {
+              screenWidth > 1024 ? <Chat setChatPop={setChatPop} /> : chatPop ? <Chat setChatPop={setChatPop} /> :<div className='fixed top-[50%] right-[2px]'>
+              <button className='bg-emerald-900 p-1 rounded-md' onClick={() => setChatPop(true)}>
+                <img src='/comments-regular.svg' className='h-10 w-10'/>
+              </button>
+            </div>
+            }
           </div>
         )}
 
