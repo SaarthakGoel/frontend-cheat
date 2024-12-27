@@ -50,7 +50,4 @@ const namesList = [
 //animate other players throwing
 
 
-
-// setTime out inserts
 // adjust probablities and dynamic probabalites acc to no of players plaing 
-// fix more than 4 cards thrown

@@ -11,6 +11,11 @@ export default function Hero() {
   const [pop3 , setPop3] = useState(false);
   const [pop4 , setPop4] = useState(false);
 
+  function scrollFunc (id) {
+    const element = document.getElementById(id);
+    element.scrollIntoView({behavior : 'smooth'});
+  }
+
   return (
     <div className="bg-emerald-900 min-h-screen">
       {
@@ -26,11 +31,11 @@ export default function Hero() {
         pop4 ? <RobotPop close={setPop4} /> : null 
       }
       <div className='bg-emerald-900 z-10 flex gap-10 md:gap-20 lg:gap-40 justify-center items-center fixed top-0 right-0 left-0'>
-        <button className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-2 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
+        <button onClick={() => scrollFunc('howToPlay')} className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-2 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
           How To Play
         </button>
         <img src='/logo.jpg' className='h-auto w-[135px] md:w-[250px]' />
-        <button className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-2 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
+        <button onClick={() => scrollFunc('gamePreview')} className="bg-emerald-900 font-bold text-white text-base sm:text-lg md:text-xl px-2 sm:px-5 md:px-10 py-2 sm:py-5 rounded-full hover:text-emerald-900 hover:bg-white transition-all duration-300">
           Game Preview
         </button>
       </div>
@@ -70,7 +75,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <section className="py-28 md:py-40 px-5 bg-white">
+      <section id='howToPlay' className="py-28 md:py-40 px-5 bg-white">
   <h2 className="text-4xl md:text-5xl lg:text-5xl font-bold text-center mb-10 md:mb-20 text-emerald-700">How to Play</h2>
   <div className="flex gap-6 md:gap-12 flex-wrap justify-center">
     <div className="bg-emerald-400 p-10 rounded-lg shadow-md w-[40vw] min-w-[250px]">
@@ -93,12 +98,16 @@ export default function Hero() {
 </section>
 
       {/* Gameplay Preview Section */}
-      <section className="py-28 md:py-40 px-5 bg-emerald-400">
-        <h2 className="text-4xl md:text-5xl lg:text-5xl font-bold text-center mb-20 text-white">Gameplay Preview</h2>
+      <section id='gamePreview' className="py-20 md:py-28 px-5 bg-emerald-400">
+        <h2 className="text-3xl md:text-3xl lg:text-4xl font-bold text-center mb-20 text-white">Gameplay Preview</h2>
         <div className="flex justify-center">
           {/* Placeholder for image */}
-          <div className="bg-white w-[600px] h-[400px] rounded-lg shadow-lg flex items-center justify-center">
-            <p className="text-emerald-800">Gameplay preview goes here</p>
+          <div className="bg-white w-[1100px] h-[200px] lg:h-[550px] rounded-lg shadow-lg flex items-center justify-center">
+            <p className="text-emerald-800">
+              <video width={1100} controls autoPlay loop>
+                <source src='/video.mp4' type='video/mp4' />
+              </video>
+            </p>
           </div>
         </div>
       </section>

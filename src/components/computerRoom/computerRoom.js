@@ -362,17 +362,18 @@ export default function ComputerRoom() {
         if (chance <= 0.15) {
           selectedCards = lieCard.filter((card, index) => index === 0)
         } else if (chance > 0.15 && chance < 0.5) {
-          selectedCards = [...cardsOfFaceInHand, lieCard[0]]
+          const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,3);
+          selectedCards = [...halfCards, lieCard[0]]
         } else {
-          const halfCards = cardsOfFaceInHand.slice(0, Math.ceil(cardsOfFaceInHand.length / 2));
+          const halfCards = cardsOfFaceInHand.length < 1 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,1);
           selectedCards = [...halfCards, lieCard[0]];
         }
 
         handleFaceClick(maxFace, index, selectedCards);
 
       } else {
-        const selectedCards = cardsOfFaceInHand;
-        handleFaceClick(maxFace, index, selectedCards);
+        const selectedCards = cardsOfFaceInHand.length < 4 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,4);
+        handleFaceClick(maxFace, index, selectedCards); 
       }
 
       return;
@@ -425,9 +426,10 @@ export default function ComputerRoom() {
       if (chance <= 0.15) {
         selectedCards = lieCard.filter((card, index) => index === 0)
       } else if (chance > 0.15 && chance < 0.5) {
-        selectedCards = [...cardsOfFaceInHand, lieCard[0]]
+        const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,3);
+        selectedCards = [...halfCards, lieCard[0]]
       } else {
-        const halfCards = cardsOfFaceInHand.slice(0, Math.ceil(cardsOfFaceInHand.length / 2));
+        const halfCards = cardsOfFaceInHand.length < 1 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,1);
         selectedCards = [...halfCards, lieCard[0]];
       }
       console.log("Selected Cards", selectedCards);
@@ -438,7 +440,7 @@ export default function ComputerRoom() {
         skipChanceHandler(index);
         return;
       }
-      const selectedCards = cardsOfFaceInHand;
+      const selectedCards = cardsOfFaceInHand.length < 4 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,4);
       console.log("Selected Cards", selectedCards);
       throwHandler(index, selectedCards);
     }
@@ -454,7 +456,7 @@ export default function ComputerRoom() {
         console.log(`I AM BEING CALLED FOR ${computerGameData.turn}`)
         handleRobo(computerGameData.currentFace, computerGameData.turn);
       }
-    }, 2000)
+    }, 3000)
   }, [computerGameData.turn , cheatComplete]);
 
 

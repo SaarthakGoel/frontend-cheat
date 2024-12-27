@@ -19,20 +19,6 @@ export default function Chat({setChatPop}) {
   const extraData = useSelector((state) => state.extraGameData);
   const messageArr = extraData.messageArr;
 
-  /*
-  useEffect(() => {
-    // Listen for chat messages from the server
-    socket.on("chatSended", ({ name, message }) => {
-       dispatch(setMessageArr({ name, message }));
-    });
-
-    // Clean up the listener when the component unmounts
-    return () => {
-      socket.off("chatSended");
-    };
-  }, []);
-  */
-
   useEffect(() => {
     // Scroll to the bottom when a new message is added
     if(chatEndRef){
