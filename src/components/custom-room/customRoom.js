@@ -12,6 +12,7 @@ import { getPlayerPositions } from '../constants/playerPositions';
 import Chat from '../chat/Chat';
 import RankCard from '../rankCard/rankCard';
 import './customRoom.css';
+import { setMessageArr } from '../../store/extraSlice';
 
 
 
@@ -36,7 +37,6 @@ export default function CustomRoom() {
   const [ranking, setRanking] = useState(null);
   const [shuffledArr , setShuffledArr] = useState([]);
   const [chatPop , setChatPop] = useState(false);
-
 
   //Animation states
   const [faceCardAnimation , setFaceCardAnimation] = useState(false);
@@ -251,6 +251,19 @@ export default function CustomRoom() {
     const x = gameData.players.find((player) => player.socketId === socket.id)
     setMyCards(x?.cardQuantity);
   }, [gameData])
+
+
+  useEffect(() => {
+    // Listen for chat messages from the server
+    socket.on("chatSended", ({ name, message }) => {
+       dispatch(setMessageArr({ name, message }));
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      socket.off("chatSended");
+    };
+  }, []);
 
 
 

@@ -16,6 +16,7 @@ export default function ComputerRoom() {
   const dispatch = useDispatch();
   const computerGameData = useSelector(state => state.computerGameData);
   const extraData = useSelector(state => state.extraGameData);
+  const screenWidth = window.innerWidth;
   console.log(computerGameData)
   console.log(extraData);
 
@@ -472,17 +473,17 @@ export default function ComputerRoom() {
               return (
                 <div
                   key={index}
-                  className="col-span-2 row-span-1 relative bg-green-900 text-white rounded-lg shadow-md py-2 flex justify-center items-center"
+                  className="col-span-5 md:col-span-3 lg:col-span-2 row-span-1 relative bg-green-900 text-white rounded-lg shadow-md py-2 flex justify-center items-center"
                   style={{
                     gridColumnStart: playerPositions[index]?.colStart,
                     gridRowStart: playerPositions[index]?.rowStart,
                   }}
                 >
                   <div className="mb-2">
-                    <img src="/avatar.svg" alt="avatar" className="h-12 w-12 rounded-full" />
+                    <img src="/avatar.svg" alt="avatar" className="h-9 w-9 md:h-12 md:w-12 rounded-full" />
                   </div>
-                  <p className="text-lg font-semibold">{player.playerName}</p>
-                  <div className="w-full flex space-x-3 absolute top-[100%]">
+                  <p className="md:text-lg font-semibold">{player.playerName}</p>
+                  <div className="w-full flex space-x-1 md:space-x-2 lg:space-x-3 absolute top-[100%]">
                     {computerGameData?.players
                       ?.find(item => item.playerName === player.playerName)
                       ?.cards?.map(i => (
@@ -496,20 +497,20 @@ export default function ComputerRoom() {
             {/* Current Player */}
             <div
               className="col-span-3 row-span-2 relative"
-              style={{ gridColumnStart: 5, gridRowStart: 7 }}
+              style={screenWidth <= 768 ? { gridColumnStart: 4, gridRowStart: 9 } : screenWidth <=1024 ? { gridColumnStart: 5, gridRowStart: 7 } : { gridColumnStart: 5, gridRowStart: 7 }}
             >
               <div className="relative">
-                <p className="w-full text-xl text-center font-semibold text-white">
+                <p className="w-full md:text-lg lg:text-xl text-center font-semibold text-white">
                   {computerGameData.players[0].playerName}
                 </p>
                 <img
                   src="/avatar.svg"
                   alt="avatar"
-                  className="h-14 w-14 absolute top-[-5px] left-[-25px] rounded-full border-[3px] border-emerald-800"
+                  className="h-12 w-12 lg:h-14 lg:w-14 absolute top-[-15px] left-[-50px] md:top-[-5px] md:left-[-25px] rounded-full border-[3px] border-emerald-800"
                 />
-                <p className="bg-emerald-50 min-w-80 text-center text-lg p-1">{mainMessage}</p>
+                <p className="bg-emerald-50 min-w-52 md:min-w-72 lg:min-w-80 text-center text-base md:text-lg p-1">{mainMessage}</p>
               </div>
-              <div className="w-full flex space-x-6 absolute top-[50%] left-[-25%]">
+              <div className="w-full flex space-x-[14px] md:space-x-4 lg:space-x-6 absolute top-[50%] left-[-120%] md:left-[-25%]">
                 {computerGameData?.players[0].cards?.map(item => (
                   <div
                     key={item}
@@ -526,8 +527,8 @@ export default function ComputerRoom() {
 
             {/*Middle Section*/}
             <div
-              className="col-span-3 row-span-2 w-full flex space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
-              style={{ gridColumnStart: 5, gridRowStart: 4 }}
+              className="col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-[5px] md:space-x-2 lg:space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
+              style={screenWidth <= 768 ? {gridColumnStart : 3 , gridRowStart : 6} : screenWidth <= 1024 ? {gridColumnStart : 4 , gridRowStart : 4} : { gridColumnStart: 5, gridRowStart: 4 }}
             >
               {
                 doubtChance ?
@@ -545,8 +546,8 @@ export default function ComputerRoom() {
             {computerGameData.turn === 0 && (
               computerGameData.players[0].cards.length === 0 ? (
                 <div
-                  className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-                  style={{ gridColumnStart: 4, gridRowStart: 9 }}
+                  className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
@@ -557,9 +558,10 @@ export default function ComputerRoom() {
                 </div>
               ) : !computerGameData.currentFace ? (
                 <div
-                  className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-                  style={{ gridColumnStart: 4, gridRowStart: 9 }}
+                className="col-span-12 md:col-span-5 row-span-1 flex justify-around pt-2 flex-wrap gap-1 md:gap-0 md:flex-nowrap items-end pb-3 rounded-lg relative"
+                style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
+                  <div className='absolute top-4 left-4 space-x-[4px] space-y-[4px] md:static'>
                   {cardFaces.map((face, index) => (
                     <button
                       key={index}
@@ -570,11 +572,12 @@ export default function ComputerRoom() {
                       {face === 'T' ? '10' : face}
                     </button>
                   ))}
+                  </div>
                 </div>
               ) : (
                 <div
-                  className="col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-                  style={{ gridColumnStart: 4, gridRowStart: 9 }}
+                  className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end px-4 pb-3 bg-emerald-300 rounded-lg"
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
                     disabled={computerGameData.prev === 0 || doubtChance}
@@ -604,8 +607,8 @@ export default function ComputerRoom() {
             {/* Doubt Section */}
             {doubtChance && (
               <div
-                className="col-span-3 row-span-2 flex gap-4 items-center w-full space-x-20 relative"
-                style={{ gridColumnStart: 1, gridRowStart: 6 }}
+              className="col-span-10 lg:col-span-3 row-span-2 flex gap-4 items-center w-full space-x-[70px] lg:space-x-20 relative"
+              style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 6 }:{ gridColumnStart: 1, gridRowStart: 6 }}
               >
                 {extraData.shuffledArr?.map(item => (
                   <button key={item} disabled={computerGameData.turn !== 0} onClick={() => handleFlip(item, 0)}>

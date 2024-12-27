@@ -45,8 +45,9 @@ const namesList = [
 //back to room button
 //Iwon button message
 //rank card betterment
+//chat unread
 
-//animate other players throwing 
+//animate other players throwing
 
 
 

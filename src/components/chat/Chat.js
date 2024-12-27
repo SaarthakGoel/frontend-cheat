@@ -1,23 +1,29 @@
 import { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import socket from "../../socket/socket";
 import './chat.css';
+import { setMessageArr } from "../../store/extraSlice";
 
 export default function Chat({setChatPop}) {
 
   const screenWidth = window.innerWidth;
 
   const [message, setMessage] = useState("");
-  const [messageArr, setMessageArr] = useState([]);
+  //const [messageArr, setMessageArr] = useState([]);
 
   const chatEndRef = useRef(null);
 
-  const roomData = useSelector((state) => state.room);
+  const dispatch = useDispatch();
 
+  const roomData = useSelector((state) => state.room);
+  const extraData = useSelector((state) => state.extraGameData);
+  const messageArr = extraData.messageArr;
+
+  /*
   useEffect(() => {
     // Listen for chat messages from the server
     socket.on("chatSended", ({ name, message }) => {
-      setMessageArr((prevMessages) => [...prevMessages, { name, message }]);
+       dispatch(setMessageArr({ name, message }));
     });
 
     // Clean up the listener when the component unmounts
@@ -25,6 +31,7 @@ export default function Chat({setChatPop}) {
       socket.off("chatSended");
     };
   }, []);
+  */
 
   useEffect(() => {
     // Scroll to the bottom when a new message is added
@@ -65,7 +72,7 @@ export default function Chat({setChatPop}) {
       {/* Chat Display Area */}
       <div ref={chatEndRef} className="flex-1 w-full overflow-y-auto max-h-[38vh] p-4 bg-white border border-emerald-300 rounded-md shadow-inner">
         <ul className="flex flex-col space-y-4" >
-          {messageArr.map((mes, index) => (
+          {messageArr?.map((mes, index) => (
             <li
               key={index}
               className={`p-3 rounded-lg shadow-sm w-fit max-w-[70%] ${

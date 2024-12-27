@@ -4,5 +4,5 @@ const socket = io('https://server-cheat.onrender.com');  // backend link in prod
 
 export default socket;
 
-//http://localhost:3500
+//
 //https://server-cheat.onrender.com
