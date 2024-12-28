@@ -44,4 +44,6 @@ const namesList = [
 
 //animate other players throwing
 
+//add slider for my cards
+
 // adjust probablities and dynamic probabalites acc to no of players plaing 

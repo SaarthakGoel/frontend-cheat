@@ -27,6 +27,8 @@ export default function ComputerRoom() {
   const [ranking, setRanking] = useState(null);
   const [cheatComplete, setCheatCompelte] = useState(false);
   const [allThrownCards, setAllThrownCards] = useState([]);
+  const [otherPlayerAnimate , setOtherPlayerAnimate] = useState(false);
+  const [otherPlayerName , setOtherPlayerName] = useState("");
   console.log('all thrown cards', allThrownCards)
 
   const decks = computerGameData.players.length === 3 ? 1 : computerGameData.players.length === 4 && computerGameData.players[0].cards === 13 ? 1 : 2;
@@ -46,7 +48,13 @@ export default function ComputerRoom() {
 
   async function handleFaceClick(face, index, selectedCards) {
     console.log(`Face chance played by player ${index}`);
-    setFaceCardAnimation(true);
+    if(index === 0){
+      setFaceCardAnimation(true);
+    }else{
+      setOtherPlayerAnimate(true);
+      setOtherPlayerName(computerGameData.players[index].playerName);
+    }
+    
     const shuffledArr = shuffle(selectedCards);
     dispatch(setShuffleArr({ shuffledArr }));
     await delay(500);
@@ -80,11 +88,17 @@ export default function ComputerRoom() {
     );
     setSelectedCards([]);
     setFaceCardAnimation(false);
+    setOtherPlayerAnimate(false);
   }
 
   async function throwHandler(index, selectedCards) {
     console.log(`Throw chance played by player ${index}`);
-    setFaceCardAnimation(true);
+    if(index === 0){
+      setFaceCardAnimation(true);
+    }else{
+      setOtherPlayerAnimate(true);
+      setOtherPlayerName(computerGameData.players[index].playerName);
+    }
 
     const shuffledArr = shuffle(selectedCards);
     dispatch(setShuffleArr({ shuffledArr }));
@@ -125,6 +139,7 @@ export default function ComputerRoom() {
     );
     setSelectedCards([]);
     setFaceCardAnimation(false);
+    setOtherPlayerAnimate(false);
   }
 
   function skipChanceHandler(index) {
@@ -484,6 +499,9 @@ export default function ComputerRoom() {
                     <img src="/avatar.svg" alt="avatar" className="h-9 w-9 md:h-12 md:w-12 rounded-full" />
                   </div>
                   <p className="md:text-lg font-semibold">{player.playerName}</p>
+                  <div className={`absolute top-[100%] ${otherPlayerAnimate && otherPlayerName === player.playerName ? 'othercardanimation'  : 'hidden' }`}>
+                    <ReverseCard key={"animate"} />
+                  </div>
                   <div className="w-full flex space-x-1 md:space-x-2 lg:space-x-3 absolute top-[100%]">
                     {computerGameData?.players
                       ?.find(item => item.playerName === player.playerName)
