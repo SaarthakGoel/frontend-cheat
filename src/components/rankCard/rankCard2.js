@@ -1,11 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import socket from '../../socket/socket';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { clearComputerGame } from '../../store/computerGameSlice';
 
-export default function RankCard({ranking , setRanking}) {
+export default function RankCard2({ranking , setRanking}) {
 
-  const roomData = useSelector((state) => state.room);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.8 },
@@ -14,9 +17,10 @@ export default function RankCard({ranking , setRanking}) {
 
   const confettiColors = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-yellow-400', 'bg-pink-400', 'bg-purple-400'];
 
-  function handleBackToRoom() {
-    socket.emit('backToRoom' , ({roomId : roomData.roomId}));
+  function handleBackToHome() {
     setRanking(null)
+    dispatch(clearComputerGame());
+    navigate('/');
   }
 
   return (
@@ -90,8 +94,8 @@ export default function RankCard({ranking , setRanking}) {
         ))}
       </div>
       <div className="flex justify-center items-center">
-        <button onClick={handleBackToRoom} className="bg-emerald-800 text-white px-4 py-2 rounded-full mt-3 font-semibold hover:bg-emerald-100 hover:text-emerald-800 transition-all duration-300">
-          Back to room
+        <button onClick={handleBackToHome} className="bg-emerald-800 text-white px-4 py-2 rounded-full mt-3 font-semibold hover:bg-emerald-100 hover:text-emerald-800 transition-all duration-300">
+          Back to Home
         </button>
       </div>
     </motion.div>

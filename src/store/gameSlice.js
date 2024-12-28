@@ -73,10 +73,13 @@ const gameSlice = createSlice({
       state.currentFace = currentFace;
       state.cardsInMiddle = cardsInMiddle;
       state.cardsInLastChance = cardsInLastChance;
+    },
+    clearData : (state , action) => {
+      return initialState;
     }
   }
 })
 
-export const {setGameData , setFaceChanceData , setThrowChanceData , setSkipTurn , setRoundOver , setDoubtOver} = gameSlice.actions;
+export const {setGameData , setFaceChanceData , setThrowChanceData , setSkipTurn , setRoundOver , setDoubtOver , clearData} = gameSlice.actions;
 
 export default gameSlice.reducer;

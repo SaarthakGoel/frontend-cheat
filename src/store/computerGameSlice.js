@@ -58,6 +58,9 @@ const computerGameSlice = createSlice({
     setCardsInLastChance(state, action) {
       state.cardsInLastChance = action.payload;
     },
+    clearComputerGame(state , action){
+      return initialState;
+    }
   },
 });
 
@@ -71,6 +74,7 @@ export const {
   setCurrentFace,
   setCardsInMiddle,
   setCardsInLastChance,
+  clearComputerGame
 } = computerGameSlice.actions;
 
 export default computerGameSlice.reducer;

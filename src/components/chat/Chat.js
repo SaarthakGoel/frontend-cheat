@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import socket from "../../socket/socket";
 import './chat.css';
-import { setMessageArr } from "../../store/extraSlice";
 
 export default function Chat({setChatPop}) {
 

@@ -9,6 +9,7 @@ import { getPlayerPositions } from '../constants/playerPositions';
 import RankCard from '../rankCard/rankCard';
 import { setPlayers, setTurn, setPrev, setSkip, setWon, setCurrentFace, setCardsInMiddle, setCardsInLastChance, } from '../../store/computerGameSlice';
 import { setShuffleArr } from '../../store/extraSlice';
+import RankCard2 from '../rankCard/rankCard2';
 
 
 
@@ -17,7 +18,7 @@ export default function ComputerRoom() {
   const computerGameData = useSelector(state => state.computerGameData);
   const extraData = useSelector(state => state.extraGameData);
   const screenWidth = window.innerWidth;
-  console.log(computerGameData)
+  console.log("computer game data" ,computerGameData)
   console.log(extraData);
 
   const [selectedCards, setSelectedCards] = useState([]);
@@ -25,7 +26,7 @@ export default function ComputerRoom() {
   const [flipedCard, setFlipedCard] = useState(null);
   const [mainMessage, setMainMessage] = useState("");
   const [ranking, setRanking] = useState(null);
-  const [cheatComplete , setCheatCompelte] = useState(false);
+  const [cheatComplete, setCheatCompelte] = useState(false);
   const [allThrownCards, setAllThrownCards] = useState([]);
   console.log('all thrown cards', allThrownCards)
 
@@ -243,7 +244,7 @@ export default function ComputerRoom() {
   };
 
 
-  function playIwon(Index){
+  function playIwon(Index) {
 
     setMainMessage(`${computerGameData.players[Index].playerName} has Won`);
 
@@ -254,8 +255,8 @@ export default function ComputerRoom() {
 
     const skip = won.map((x) => x >= 1);
 
-    let nextPlayerIndex = (Index+1) % computerGameData.players.length;
-    while(won[nextPlayerIndex]){
+    let nextPlayerIndex = (Index + 1) % computerGameData.players.length;
+    while (won[nextPlayerIndex]) {
       nextPlayerIndex = (nextPlayerIndex + 1) % computerGameData.players.length;
     }
 
@@ -266,7 +267,7 @@ export default function ComputerRoom() {
     dispatch(setCardsInMiddle([]));
     dispatch(setCardsInLastChance([]));
 
-    let updatedWon;
+    let updatedWon = [...won];
 
     if (won.filter((x) => x === 0).length === 1) {
       updatedWon = [...won]; // Create a mutable copy of the won array
@@ -276,7 +277,7 @@ export default function ComputerRoom() {
         }
         return { name: player.playerName, rank: updatedWon[index] };
       });
-    
+
       rankData.sort((a, b) => a.rank - b.rank);
       setRanking(rankData);
     }
@@ -287,8 +288,8 @@ export default function ComputerRoom() {
 
   const otherPlayers = computerGameData?.players.filter((player, index) => index !== 0);
 
-  async function delay(ms){
-    return new Promise((resolve) => setTimeout(resolve , ms));
+  async function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
 
@@ -329,9 +330,9 @@ export default function ComputerRoom() {
     const botCards = computerGameData.players[index].cards;
     const totalCardsPerFace = 4 * decks;
 
-    if(botCards.length === 0){
-       playIwon(index);
-       return;
+    if (botCards.length === 0) {
+      playIwon(index);
+      return;
     }
 
     let cardsOfFaceInHand = botCards.filter((card) => card[0] === face);
@@ -362,18 +363,18 @@ export default function ComputerRoom() {
         if (chance <= 0.15) {
           selectedCards = lieCard.filter((card, index) => index === 0)
         } else if (chance > 0.15 && chance < 0.5) {
-          const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,3);
+          const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 3);
           selectedCards = [...halfCards, lieCard[0]]
         } else {
-          const halfCards = cardsOfFaceInHand.length < 1 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,1);
+          const halfCards = cardsOfFaceInHand.length < 1 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 1);
           selectedCards = [...halfCards, lieCard[0]];
         }
 
         handleFaceClick(maxFace, index, selectedCards);
 
       } else {
-        const selectedCards = cardsOfFaceInHand.length < 4 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,4);
-        handleFaceClick(maxFace, index, selectedCards); 
+        const selectedCards = cardsOfFaceInHand.length < 4 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 4);
+        handleFaceClick(maxFace, index, selectedCards);
       }
 
       return;
@@ -403,7 +404,7 @@ export default function ComputerRoom() {
 
     }
 
-    if(computerGameData.skip[index]){
+    if (computerGameData.skip[index]) {
       skipChanceHandler(index);
       return;
     }
@@ -426,10 +427,10 @@ export default function ComputerRoom() {
       if (chance <= 0.15) {
         selectedCards = lieCard.filter((card, index) => index === 0)
       } else if (chance > 0.15 && chance < 0.5) {
-        const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,3);
+        const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 3);
         selectedCards = [...halfCards, lieCard[0]]
       } else {
-        const halfCards = cardsOfFaceInHand.length < 1 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,1);
+        const halfCards = cardsOfFaceInHand.length < 1 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 1);
         selectedCards = [...halfCards, lieCard[0]];
       }
       console.log("Selected Cards", selectedCards);
@@ -440,7 +441,7 @@ export default function ComputerRoom() {
         skipChanceHandler(index);
         return;
       }
-      const selectedCards = cardsOfFaceInHand.length < 4 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0,4);
+      const selectedCards = cardsOfFaceInHand.length < 4 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 4);
       console.log("Selected Cards", selectedCards);
       throwHandler(index, selectedCards);
     }
@@ -457,15 +458,14 @@ export default function ComputerRoom() {
         handleRobo(computerGameData.currentFace, computerGameData.turn);
       }
     }, 3000)
-  }, [computerGameData.turn , cheatComplete]);
-
+  }, [computerGameData.turn, cheatComplete]);
 
   return (
     <div className="max-h-[100vh]">
       <div className="w-full bg-emerald-600 p-5">
         {ranking ? (
           <div className="flex justify-center items-center min-h-screen">
-            <RankCard ranking={ranking} />
+            <RankCard2 ranking={ranking} setRanking={setRanking} />
           </div>
         ) : (
           <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
@@ -499,7 +499,7 @@ export default function ComputerRoom() {
             {/* Current Player */}
             <div
               className="col-span-3 row-span-2 relative"
-              style={screenWidth <= 768 ? { gridColumnStart: 4, gridRowStart: 9 } : screenWidth <=1024 ? { gridColumnStart: 5, gridRowStart: 7 } : { gridColumnStart: 5, gridRowStart: 7 }}
+              style={screenWidth <= 768 ? { gridColumnStart: 4, gridRowStart: 9 } : screenWidth <= 1024 ? { gridColumnStart: 5, gridRowStart: 7 } : { gridColumnStart: 5, gridRowStart: 7 }}
             >
               <div className="relative">
                 <p className="w-full md:text-lg lg:text-xl text-center font-semibold text-white">
@@ -530,7 +530,7 @@ export default function ComputerRoom() {
             {/*Middle Section*/}
             <div
               className="col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-[5px] md:space-x-2 lg:space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
-              style={screenWidth <= 768 ? {gridColumnStart : 3 , gridRowStart : 6} : screenWidth <= 1024 ? {gridColumnStart : 4 , gridRowStart : 4} : { gridColumnStart: 5, gridRowStart: 4 }}
+              style={screenWidth <= 768 ? { gridColumnStart: 3, gridRowStart: 6 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 4 } : { gridColumnStart: 5, gridRowStart: 4 }}
             >
               {
                 doubtChance ?
@@ -549,7 +549,7 @@ export default function ComputerRoom() {
               computerGameData.players[0].cards.length === 0 ? (
                 <div
                   className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
@@ -560,26 +560,26 @@ export default function ComputerRoom() {
                 </div>
               ) : !computerGameData.currentFace ? (
                 <div
-                className="col-span-12 md:col-span-5 row-span-1 flex justify-around pt-2 flex-wrap gap-1 md:gap-0 md:flex-nowrap items-end pb-3 rounded-lg relative"
-                style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
+                  className="col-span-12 md:col-span-5 row-span-1 flex justify-around pt-2 flex-wrap gap-1 md:gap-0 md:flex-nowrap items-end pb-3 rounded-lg relative"
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <div className='absolute top-4 left-4 space-x-[4px] space-y-[4px] md:static'>
-                  {cardFaces.map((face, index) => (
-                    <button
-                      key={index}
-                      disabled={selectedCards.length === 0}
-                      onClick={() => handleFaceClick(face, computerGameData.turn, selectedCards)}
-                      className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
-                    >
-                      {face === 'T' ? '10' : face}
-                    </button>
-                  ))}
+                    {cardFaces.map((face, index) => (
+                      <button
+                        key={index}
+                        disabled={selectedCards.length === 0}
+                        onClick={() => handleFaceClick(face, computerGameData.turn, selectedCards)}
+                        className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+                      >
+                        {face === 'T' ? '10' : face}
+                      </button>
+                    ))}
                   </div>
                 </div>
               ) : (
                 <div
                   className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end px-4 pb-3 bg-emerald-300 rounded-lg"
-                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
                     disabled={computerGameData.prev === 0 || doubtChance}
@@ -609,8 +609,8 @@ export default function ComputerRoom() {
             {/* Doubt Section */}
             {doubtChance && (
               <div
-              className="col-span-10 lg:col-span-3 row-span-2 flex gap-4 items-center w-full space-x-[70px] lg:space-x-20 relative"
-              style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 6 }:{ gridColumnStart: 1, gridRowStart: 6 }}
+                className="col-span-10 lg:col-span-3 row-span-2 flex gap-4 items-center w-full space-x-[70px] lg:space-x-20 relative"
+                style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 6 } : { gridColumnStart: 1, gridRowStart: 6 }}
               >
                 {extraData.shuffledArr?.map(item => (
                   <button key={item} disabled={computerGameData.turn !== 0} onClick={() => handleFlip(item, 0)}>
@@ -619,8 +619,16 @@ export default function ComputerRoom() {
                 ))}
               </div>
             )}
+            {/* Win Section */}
+            {computerGameData?.won[0] !== 0 && (
+              <div className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end px-4 pb-3 bg-emerald-300 rounded-lg"
+                style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}>
+                <p className="text-gray-800 bg-emerald-500 text-lg md:text-xl font-bold mb-4">Congratulations! You won! {computerGameData.won[0]}th Rank</p>
+              </div>
+            )}
           </div>
         )}
+
       </div>
     </div>
   );

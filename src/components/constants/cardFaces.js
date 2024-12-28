@@ -42,12 +42,9 @@ const namesList = [
   return faceNames[face] || "UNKNOWN";
 }
 
-//back to room button
-//Iwon button message
-//rank card betterment
 //chat unread
+//meta data set
 
 //animate other players throwing
-
 
 // adjust probablities and dynamic probabalites acc to no of players plaing 

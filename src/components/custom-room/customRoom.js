@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import socket from '../../socket/socket';
 import { setPlayerNames } from '../../store/roomSlice';
 import ReverseCard from '../reverse-card/ReverseCard';
-import { setDoubtOver, setFaceChanceData, setGameData, setRoundOver, setSkipTurn, setThrowChanceData } from '../../store/gameSlice';
+import { clearData, setDoubtOver, setFaceChanceData, setGameData, setRoundOver, setSkipTurn, setThrowChanceData } from '../../store/gameSlice';
 import { cardFaces } from '../constants/cardFaces';
 import DoubtCard from '../doubt-card/doubtCard';
 import { shuffle } from 'lodash';
@@ -22,7 +22,7 @@ export default function CustomRoom() {
   const gameData = useSelector(state => state.gameData);
   const screenWidth = window.innerWidth;
 
-  console.log(roomData)
+  console.log(gameData)
 
   const [players, setPlayers] = useState(Array.from({ length: roomData.playerNo - 1 }, (_, i) => `Player ${i + 1}`));
   const [win, setWin] = useState(false);
@@ -35,11 +35,11 @@ export default function CustomRoom() {
   const [myCards, setMyCards] = useState(null);
   const [isPrevOnly, setIsPrevOnly] = useState(false);
   const [ranking, setRanking] = useState(null);
-  const [shuffledArr , setShuffledArr] = useState([]);
-  const [chatPop , setChatPop] = useState(false);
+  const [shuffledArr, setShuffledArr] = useState([]);
+  const [chatPop, setChatPop] = useState(false);
 
   //Animation states
-  const [faceCardAnimation , setFaceCardAnimation] = useState(false);
+  const [faceCardAnimation, setFaceCardAnimation] = useState(false);
 
   const handleFlip = (item) => {
 
@@ -47,7 +47,7 @@ export default function CustomRoom() {
       socket.emit('cardFlipped', { currRoom: roomData.roomId, item: item });
       setTimeout(() => {
         socket.emit('handleDoubtLogic', { openCard: item, currRoom: Number(roomData.roomId), currSocketId: socket.id });
-      },2000)
+      }, 2000)
     }
   };
 
@@ -64,14 +64,14 @@ export default function CustomRoom() {
 
   // Room Socket Logic
   socket.on('playerJoined', ({ playerName }) => {
-    dispatch(setPlayerNames({ playerNames : playerName }));
+    dispatch(setPlayerNames({ playerNames: playerName }));
     const x = handleNameAssign(playerName, players);
     console.log(x);
     setPlayers(x);
   });
 
 
-  socket.on('onlineJoined' , ({playerNames}) => {
+  socket.on('onlineJoined', ({ playerNames }) => {
     console.log("this is working Congrats!")
     console.log(playerNames);
     dispatch(setPlayerNames({ playerNames }));
@@ -81,7 +81,7 @@ export default function CustomRoom() {
   })
 
 
-  console.log( "Global players state" , players)
+  console.log("Global players state", players)
 
   socket.on('playerLeft', ({ playerName }) => {
     dispatch(setPlayerNames({ playerName }));
@@ -89,7 +89,7 @@ export default function CustomRoom() {
   });
 
   function handleNameAssign(playerNames, players) {
-    console.log( "in fuction" , playerNames , players , roomData.name)
+    console.log("in fuction", playerNames, players, roomData.name)
     const myIndex = playerNames.indexOf(roomData.name);
 
     if (myIndex === -1) {
@@ -102,7 +102,7 @@ export default function CustomRoom() {
       ...playerNames.slice(0, myIndex),
     ];
 
-    console.log( "ordered names" , orderedNames)
+    console.log("ordered names", orderedNames)
 
     const updatedPlayers = players.map((_, index) => {
       return orderedNames[index] || players[index];
@@ -156,7 +156,7 @@ export default function CustomRoom() {
       socket.emit('FaceChancePlayed', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards, currFace: face })
       setSelectedCards([]);
       setFaceCardAnimation(false);
-    },500);
+    }, 500);
   }
 
   socket.on('FaceChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, currentFace, mainMessage }) => {
@@ -185,7 +185,7 @@ export default function CustomRoom() {
       socket.emit('throwChance', { currSocketId: socket.id, currRoom: Number(roomData.roomId), selectedCards: selectedCards });
       setFaceCardAnimation(false);
       setSelectedCards([]);
-    },500)
+    }, 500)
   }
 
   socket.on('throwChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, won, mainMessage }) => {
@@ -218,6 +218,13 @@ export default function CustomRoom() {
     socket.emit('iwon', { currSocketId: socket.id, currRoom: Number(roomData.roomId) });
     setWin(true);
   }
+
+  socket.on('clearGameSlice', () => {
+    console.log('this ran too')
+    dispatch(clearData());
+    setStarted(false);
+    setMainMessage("");
+  })
 
 
 
@@ -256,7 +263,7 @@ export default function CustomRoom() {
   useEffect(() => {
     // Listen for chat messages from the server
     socket.on("chatSended", ({ name, message }) => {
-       dispatch(setMessageArr({ name, message }));
+      dispatch(setMessageArr({ name, message }));
     });
 
     // Clean up the listener when the component unmounts
@@ -266,20 +273,18 @@ export default function CustomRoom() {
   }, []);
 
 
-
-
   return (
     <div className="max-h-[100vh]">
       <div className="w-full bg-emerald-600 p-5">
         {ranking ? (
           <div className="flex justify-center items-center min-h-screen">
-            <RankCard ranking={ranking} />
+            <RankCard ranking={ranking} setRanking={setRanking} />
           </div>
         ) : (
           <div className="grid grid-cols-12 grid-rows-12 gap-4 w-full mx-auto bg-emerald-600 min-h-screen p-5">
             {/* Players */}
             {players.map((player, index) => {
-              const playerPositions = getPlayerPositions(roomData.playerNo-1);
+              const playerPositions = getPlayerPositions(roomData.playerNo - 1);
               return (
                 <div
                   key={index}
@@ -307,7 +312,7 @@ export default function CustomRoom() {
             {/* Current Player */}
             <div
               className="col-span-3 row-span-2 relative"
-              style={screenWidth <= 768 ? { gridColumnStart: 4, gridRowStart: 9 } : screenWidth <=1024 ? { gridColumnStart: 5, gridRowStart: 7 } : { gridColumnStart: 5, gridRowStart: 7 }}
+              style={screenWidth <= 768 ? { gridColumnStart: 4, gridRowStart: 9 } : screenWidth <= 1024 ? { gridColumnStart: 5, gridRowStart: 7 } : { gridColumnStart: 5, gridRowStart: 7 }}
             >
               <div className="relative">
                 <p className="w-full md:text-lg lg:text-xl text-center font-semibold text-white">
@@ -340,18 +345,18 @@ export default function CustomRoom() {
             {/*Middle Section*/}
             <div
               className="col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-[5px] md:space-x-2 lg:space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
-              style={screenWidth <= 768 ? {gridColumnStart : 3 , gridRowStart : 6} : screenWidth <= 1024 ? {gridColumnStart : 4 , gridRowStart : 4} : { gridColumnStart: 5, gridRowStart: 4 }}
+              style={screenWidth <= 768 ? { gridColumnStart: 3, gridRowStart: 6 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 4 } : { gridColumnStart: 5, gridRowStart: 4 }}
             >
-               {
-                doubtChance ? 
-                gameData.cardsInMiddle.filter((card) => !gameData.cardsInLastChance.includes(card)).map(i => (
-                  <ReverseCard key={i} />
-                ))
-                :
-                gameData.cardsInMiddle?.map(i => ( 
-                  <ReverseCard key={i} />
-                ))
-               }
+              {
+                doubtChance ?
+                  gameData.cardsInMiddle.filter((card) => !gameData.cardsInLastChance.includes(card)).map(i => (
+                    <ReverseCard key={i} />
+                  ))
+                  :
+                  gameData.cardsInMiddle?.map(i => (
+                    <ReverseCard key={i} />
+                  ))
+              }
             </div>
 
             {/* Action Buttons */}
@@ -359,7 +364,7 @@ export default function CustomRoom() {
               myCards === 0 ? (
                 <div
                   className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
-                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
                     onClick={handleIWon}
@@ -371,25 +376,25 @@ export default function CustomRoom() {
               ) : !gameData.currentFace ? (
                 <div
                   className="col-span-12 md:col-span-5 row-span-1 flex justify-around pt-2 flex-wrap gap-1 md:gap-0 md:flex-nowrap items-end pb-3 rounded-lg relative"
-                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <div className='absolute top-4 left-4 space-x-[4px] space-y-[4px] md:static'>
-                   {cardFaces.map((face, index) => (
-                    <button
-                      key={index}
-                      disabled={selectedCards.length === 0}
-                      onClick={() => handleFaceClick(face)}
-                      className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
-                    >
-                      {face === 'T' ? '10' : face}
-                    </button>
-                   ))}
-                   </div>
+                    {cardFaces.map((face, index) => (
+                      <button
+                        key={index}
+                        disabled={selectedCards.length === 0}
+                        onClick={() => handleFaceClick(face)}
+                        className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-3 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300"
+                      >
+                        {face === 'T' ? '10' : face}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div
                   className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end px-4 pb-3 bg-emerald-300 rounded-lg"
-                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <=1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
+                  style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
                     disabled={isPrevOnly || doubtChance}
@@ -406,7 +411,7 @@ export default function CustomRoom() {
                     Throw
                   </button>
                   <button
-                  disabled={doubtChance}
+                    disabled={doubtChance}
                     onClick={skipChanceHandler}
                     className="bg-emerald-900 text-emerald-100 font-semibold text-lg py-1 px-6 rounded-md hover:text-emerald-900 hover:bg-emerald-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -420,7 +425,7 @@ export default function CustomRoom() {
             {!started && (
               <div
                 className="col-span-8 md:col-span-6 lg:col-span-3 row-span-3 flex flex-col gap-4 justify-center items-center bg-emerald-300 rounded-lg"
-                style={screenWidth <= 768 ? {gridColumnStart : 3 , gridRowStart : 4} : screenWidth <= 1024 ? {gridColumnStart : 4 , gridRowStart : 4} : { gridColumnStart: 5, gridRowStart: 4 }}
+                style={screenWidth <= 768 ? { gridColumnStart: 3, gridRowStart: 4 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 4 } : { gridColumnStart: 5, gridRowStart: 4 }}
               >
                 <button
                   disabled={roomData.playerNames?.length !== roomData.playerNo || roomData.host !== true}
@@ -445,7 +450,7 @@ export default function CustomRoom() {
             {doubtChance && (
               <div
                 className="col-span-10 lg:col-span-3 row-span-2 flex gap-4 items-center w-full space-x-[70px] lg:space-x-20 relative"
-                style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 6 }:{ gridColumnStart: 1, gridRowStart: 6 }}
+                style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 6 } : { gridColumnStart: 1, gridRowStart: 6 }}
               >
                 {shuffledArr.map(item => (
                   <button key={item} disabled={gameData.turn !== socket.id} onClick={() => handleFlip(item)}>
@@ -457,21 +462,23 @@ export default function CustomRoom() {
 
             {/* Chat Component */}
             {
-              screenWidth > 1024 ? <Chat setChatPop={setChatPop} /> : chatPop ? <Chat setChatPop={setChatPop} /> :<div className='fixed top-[50%] right-[2px]'>
-              <button className='bg-emerald-900 p-1 rounded-md' onClick={() => setChatPop(true)}>
-                <img src='/comments-regular.svg' className='h-10 w-10'/>
-              </button>
-            </div>
+              screenWidth > 1024 ? <Chat setChatPop={setChatPop} /> : chatPop ? <Chat setChatPop={setChatPop} /> : <div className='fixed top-[50%] right-[2px]'>
+                <button className='bg-emerald-900 p-1 rounded-md' onClick={() => setChatPop(true)}>
+                  <img src='/comments-regular.svg' className='h-10 w-10' />
+                </button>
+              </div>
             }
+
+            {/* Win Section */}
+            {win && (
+              <div className="col-span-3 row-span-1 mt-10 bg-white p-4 rounded-md shadow-lg w-full max-w-lg text-center" style={{ gridColumnStart: 4, gridRowStart: 9 }}>
+                <p className="text-gray-800 bg-emerald-500 text-lg md:text-xl font-bold mb-4">Congratulations! You won! {gameData?.won[gameData?.players?.findIndex((player) => player.playerName === roomData.name)]}th Rank</p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Win Section */}
-        {win && (
-          <div className="col-span-3 row-span-1 mt-10 bg-white p-4 rounded-md shadow-lg w-full max-w-lg text-center" style={{ gridColumnStart: 4, gridRowStart: 9 }}>
-            <p className="text-gray-800 text-lg mb-4">Congratulations! You won!</p>
-          </div>
-        )}
+
       </div>
     </div>
   );
