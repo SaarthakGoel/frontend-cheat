@@ -42,9 +42,6 @@ const namesList = [
   return faceNames[face] || "UNKNOWN";
 }
 
-//chat unread
-//meta data set
-
 //animate other players throwing
 
 // adjust probablities and dynamic probabalites acc to no of players plaing 

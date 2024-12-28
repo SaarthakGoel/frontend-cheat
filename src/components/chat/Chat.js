@@ -8,7 +8,6 @@ export default function Chat({setChatPop}) {
   const screenWidth = window.innerWidth;
 
   const [message, setMessage] = useState("");
-  //const [messageArr, setMessageArr] = useState([]);
 
   const chatEndRef = useRef(null);
 

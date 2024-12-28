@@ -20,6 +20,8 @@ export default function CustomRoom() {
   const dispatch = useDispatch();
   const roomData = useSelector((state => state.room));
   const gameData = useSelector(state => state.gameData);
+  const extraData = useSelector((state) => state.extraGameData);
+  const messageArr = extraData.messageArr;
   const screenWidth = window.innerWidth;
 
   console.log(gameData)
@@ -37,6 +39,8 @@ export default function CustomRoom() {
   const [ranking, setRanking] = useState(null);
   const [shuffledArr, setShuffledArr] = useState([]);
   const [chatPop, setChatPop] = useState(false);
+  const [newMessages, setNewMessages] = useState(false);
+  const [lastMessageCount, setLastMessageCount] = useState(0);
 
   //Animation states
   const [faceCardAnimation, setFaceCardAnimation] = useState(false);
@@ -272,6 +276,16 @@ export default function CustomRoom() {
     };
   }, []);
 
+  useEffect(() => {
+    if (chatPop) {
+      setNewMessages(false);
+      setLastMessageCount(messageArr.length);
+    } else if (messageArr.length > lastMessageCount) {
+      // Set newMessages to true only if there are new messages since chat was closed
+      setNewMessages(true);
+    }
+  }, [messageArr, chatPop, lastMessageCount]);
+
 
   return (
     <div className="max-h-[100vh]">
@@ -463,6 +477,9 @@ export default function CustomRoom() {
             {/* Chat Component */}
             {
               screenWidth > 1024 ? <Chat setChatPop={setChatPop} /> : chatPop ? <Chat setChatPop={setChatPop} /> : <div className='fixed top-[50%] right-[2px]'>
+                {!chatPop && newMessages ? <div className="fixed top-[48%] right-[10px] bg-red-700 text-xs text-white font-bold px-2 py-1 rounded-full shadow-md animate-pulse">
+                  New!
+                </div> : null}
                 <button className='bg-emerald-900 p-1 rounded-md' onClick={() => setChatPop(true)}>
                   <img src='/comments-regular.svg' className='h-10 w-10' />
                 </button>
