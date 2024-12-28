@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import {useSelector } from "react-redux";
 import socket from "../../socket/socket";
 import './chat.css';
 
@@ -10,8 +10,6 @@ export default function Chat({setChatPop}) {
   const [message, setMessage] = useState("");
 
   const chatEndRef = useRef(null);
-
-  const dispatch = useDispatch();
 
   const roomData = useSelector((state) => state.room);
   const extraData = useSelector((state) => state.extraGameData);

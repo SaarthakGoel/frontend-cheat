@@ -6,7 +6,6 @@ import { cardFaces, findFaceName } from '../constants/cardFaces';
 import DoubtCard from '../doubt-card/doubtCard';
 import { shuffle } from 'lodash';
 import { getPlayerPositions } from '../constants/playerPositions';
-import RankCard from '../rankCard/rankCard';
 import { setPlayers, setTurn, setPrev, setSkip, setWon, setCurrentFace, setCardsInMiddle, setCardsInLastChance, } from '../../store/computerGameSlice';
 import { setShuffleArr } from '../../store/extraSlice';
 import RankCard2 from '../rankCard/rankCard2';

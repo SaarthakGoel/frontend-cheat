@@ -12,3 +12,19 @@
 .facecardanimation{
   animation: faceanime 1s ease-out forwards;
 }
+
+.othercardanimation{
+  animation: otheranime 1s ease-out forwards;
+}
+
+
+@keyframes otheranime {
+  0% {
+    transform: translate(0, 0) scale(1); /* Start position */
+    opacity: 1;
+  }
+  100% {
+    transform: translate( 0 , 30vh) scale(0.3); /* Center of screen */
+    opacity: 0.5;
+  }
+}

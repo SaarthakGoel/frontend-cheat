@@ -41,6 +41,8 @@ export default function CustomRoom() {
   const [chatPop, setChatPop] = useState(false);
   const [newMessages, setNewMessages] = useState(false);
   const [lastMessageCount, setLastMessageCount] = useState(0);
+  const [otherPlayerAnimate , setOtherPlayerAnimate] = useState(false);
+  const [otherPlayerName , setOtherPlayerName] = useState("");
 
   //Animation states
   const [faceCardAnimation, setFaceCardAnimation] = useState(false);
@@ -164,8 +166,16 @@ export default function CustomRoom() {
   }
 
   socket.on('FaceChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, currentFace, mainMessage }) => {
-    dispatch(setFaceChanceData({ players, turn, cardsInMiddle, cardsInLastChance, prev, currentFace }));
-    setMainMessage(mainMessage);
+    console.log(prev , socket.id);
+    const otherplayer = players.filter((player) => String(player.socketId) === String(prev));
+    console.log(otherplayer)
+    setOtherPlayerName(otherplayer[0].playerName);
+    if(prev !== socket.id) setOtherPlayerAnimate(true);
+    setTimeout(() => {
+      dispatch(setFaceChanceData({ players, turn, cardsInMiddle, cardsInLastChance, prev, currentFace }));
+      setMainMessage(mainMessage);
+      setOtherPlayerAnimate(false);
+    },1000)
   })
 
 
@@ -193,8 +203,15 @@ export default function CustomRoom() {
   }
 
   socket.on('throwChanceDone', ({ players, turn, cardsInMiddle, cardsInLastChance, prev, won, mainMessage }) => {
-    dispatch(setThrowChanceData({ players, turn, cardsInMiddle, cardsInLastChance, prev, won }));
-    setMainMessage(mainMessage)
+    const otherplayer = players.filter((player) => String(player.socketId) === String(prev));
+    setOtherPlayerName(otherplayer[0].playerName);
+    if(prev !== socket.id) setOtherPlayerAnimate(true);
+    setTimeout(() => {
+      dispatch(setThrowChanceData({ players, turn, cardsInMiddle, cardsInLastChance, prev, won }));
+      setMainMessage(mainMessage)
+      setOtherPlayerAnimate(false);
+      console.log("this happened 1 s later")
+    },1000)
   })
 
 
@@ -229,8 +246,6 @@ export default function CustomRoom() {
     setStarted(false);
     setMainMessage("");
   })
-
-
 
 
 
@@ -312,6 +327,9 @@ export default function CustomRoom() {
                     <img src="/avatar.svg" alt="avatar" className="h-9 w-9 md:h-12 md:w-12 rounded-full" />
                   </div>
                   <p className="md:text-lg font-semibold">{player}</p>
+                  <div className={`absolute top-[100%] ${otherPlayerAnimate && otherPlayerName === player ? 'othercardanimation'  : 'hidden' }`}>
+                     <ReverseCard key={"animate"} />
+                  </div>
                   <div className="w-full flex space-x-1 md:space-x-2 lg:space-x-3 absolute top-[100%]">
                     {gameData?.players
                       ?.find(item => item.playerName === player)

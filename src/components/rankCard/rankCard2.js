@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import socket from '../../socket/socket';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { clearComputerGame } from '../../store/computerGameSlice';
 
