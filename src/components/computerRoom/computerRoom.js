@@ -364,7 +364,7 @@ export default function ComputerRoom() {
 
       cardsOfFaceInHand = botCards.filter((card) => card[0] === maxFace);
 
-      const lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
+      const lieProbablity = (0.35 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
 
       if (lieProbablity > 0.5) {
 
@@ -395,7 +395,7 @@ export default function ComputerRoom() {
     }
 
     if (computerGameData.prev !== computerGameData.turn && computerGameData.prev !== null) {
-      let cheatProb = (0.3 * (computerGameData.cardsInMiddle.length / (totalCardsPerFace * 1.2))) + (0.4 * (computerGameData.cardsInLastChance.length / 4)) + (0.1 * Math.random());
+      let cheatProb = (0.5 * (computerGameData.cardsInMiddle.length / (totalCardsPerFace * 1.2))) + (0.2 * (computerGameData.cardsInLastChance.length / 4)) + (0.1 * Math.random());
 
       cheatProb = Math.min(1, cheatProb);
 
@@ -423,7 +423,7 @@ export default function ComputerRoom() {
       return;
     }
 
-    const lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)) + (0.1 * Math.random()));
+    const lieProbablity = (0.35 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)) + (0.1 * Math.random()));
 
     console.log(`lie prob for ${computerGameData.players[index].playerName}`, lieProbablity);
 
