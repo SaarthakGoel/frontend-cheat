@@ -17,8 +17,8 @@ export default function ComputerRoom() {
   const computerGameData = useSelector(state => state.computerGameData);
   const extraData = useSelector(state => state.extraGameData);
   const screenWidth = window.innerWidth;
-  console.log("computer game data", computerGameData)
-  console.log(extraData);
+  //console.log("computer game data", computerGameData)
+  //console.log(extraData);
 
   const [selectedCards, setSelectedCards] = useState([]);
   const [doubtChance, setDoubtChance] = useState(false);
@@ -350,7 +350,7 @@ export default function ComputerRoom() {
     }
 
     let cardsOfFaceInHand = botCards.filter((card) => card[0] === face);
-    const allThrownCardsOfFace = allThrownCards.filter((card) => card[0] === face);
+    const allThrownCardsOfFace = allThrownCards?.filter((card) => card[0] === face);
 
     console.log(`For player ${computerGameData.players[index].playerName}, ${index} , ${face}   , cards : ${botCards} , totalCardsPerFace : ${totalCardsPerFace} , cardsOfFaceInHand : ${cardsOfFaceInHand} , allthrownCarddOfFace : ${allThrownCardsOfFace}`);
 
@@ -364,7 +364,7 @@ export default function ComputerRoom() {
 
       cardsOfFaceInHand = botCards.filter((card) => card[0] === maxFace);
 
-      const lieProbablity = (0.2 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.6 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)));
+      const lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
 
       if (lieProbablity > 0.5) {
 
@@ -374,9 +374,9 @@ export default function ComputerRoom() {
 
         const chance = Math.random();
         let selectedCards = [];
-        if (chance <= 0.15) {
+        if (chance <= 0.20) {
           selectedCards = lieCard.filter((card, index) => index === 0)
-        } else if (chance > 0.15 && chance < 0.5) {
+        } else if (chance > 0.20 && chance < 0.40) {
           const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 3);
           selectedCards = [...halfCards, lieCard[0]]
         } else {
@@ -395,13 +395,13 @@ export default function ComputerRoom() {
     }
 
     if (computerGameData.prev !== computerGameData.turn && computerGameData.prev !== null) {
-      let cheatProb = (0.5 * (computerGameData.cardsInMiddle.length / totalCardsPerFace)) + (0.3 * (computerGameData.cardsInLastChance.length / 4));
+      let cheatProb = (0.3 * (computerGameData.cardsInMiddle.length / (totalCardsPerFace * 1.2))) + (0.4 * (computerGameData.cardsInLastChance.length / 4)) + (0.1 * Math.random());
 
       cheatProb = Math.min(1, cheatProb);
 
       console.log("cheat prob", cheatProb)
 
-      if (cheatProb > 0.7) {
+      if (cheatProb > 0.6) {
         doubtHandler(index);
         console.log(extraData.shuffledArr);
         const chanceIndex = Math.floor((Math.random() * extraData.shuffledArr.length));
@@ -423,7 +423,7 @@ export default function ComputerRoom() {
       return;
     }
 
-    const lieProbablity = (0.2 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.6 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)));
+    const lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)) + (0.1 * Math.random()));
 
     console.log(`lie prob for ${computerGameData.players[index].playerName}`, lieProbablity);
 
@@ -435,12 +435,23 @@ export default function ComputerRoom() {
 
       console.log("lie card", lieCard)
 
+      if(lieFace === undefined || lieCard === undefined){
+        if (cardsOfFaceInHand.length === 0) {
+          skipChanceHandler(index);
+          return;
+        }
+        const selectedCards = cardsOfFaceInHand.length < 4 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 4);
+        console.log("Selected Cards", selectedCards);
+        throwHandler(index, selectedCards);
+        return;
+      }
+
       const chance = Math.random();
       console.log(chance);
       let selectedCards = [];
-      if (chance <= 0.15) {
+      if (chance <= 0.20) {
         selectedCards = lieCard.filter((card, index) => index === 0)
-      } else if (chance > 0.15 && chance < 0.5) {
+      } else if (chance > 0.20 && chance < 0.40) {
         const halfCards = cardsOfFaceInHand.length < 3 ? cardsOfFaceInHand : cardsOfFaceInHand.slice(0, 3);
         selectedCards = [...halfCards, lieCard[0]]
       } else {
@@ -460,14 +471,13 @@ export default function ComputerRoom() {
       throwHandler(index, selectedCards);
     }
 
-
   }
 
 
   useEffect(() => {
 
     setTimeout(() => {
-      if (computerGameData.turn !== 0) {
+      if (computerGameData.turn !== 10) {
         console.log(`I AM BEING CALLED FOR ${computerGameData.turn}`)
         handleRobo(computerGameData.currentFace, computerGameData.turn);
       }
