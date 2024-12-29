@@ -353,7 +353,7 @@ export default function CustomRoom() {
             >
               <div className="relative">
                 <p className="w-full md:text-lg lg:text-xl text-center font-semibold text-white">
-                  {roomData.name} &emsp;&emsp; Face : {gameData?.currentFace}
+                  {roomData.name}
                 </p>
                 <img
                   src="/avatar.svg"
@@ -381,9 +381,10 @@ export default function CustomRoom() {
 
             {/*Middle Section*/}
             <div
-              className="col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-[5px] md:space-x-2 lg:space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
+              className="relative col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-[5px] md:space-x-2 lg:space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
               style={screenWidth <= 768 ? { gridColumnStart: 3, gridRowStart: 6 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 4 } : { gridColumnStart: 5, gridRowStart: 4 }}
             >
+              <div className='absolute top-0 left-[30%] text-bold text-white'>Current Face: {gameData?.currentFace}</div>
               {
                 doubtChance ?
                   gameData.cardsInMiddle.filter((card) => !gameData.cardsInLastChance.includes(card)).map(i => (
