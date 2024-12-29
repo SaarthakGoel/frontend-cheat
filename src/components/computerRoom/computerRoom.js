@@ -477,7 +477,7 @@ export default function ComputerRoom() {
   useEffect(() => {
 
     setTimeout(() => {
-      if (computerGameData.turn !== 10) {
+      if (computerGameData.turn !== 0) {
         console.log(`I AM BEING CALLED FOR ${computerGameData.turn}`)
         handleRobo(computerGameData.currentFace, computerGameData.turn);
       }
