@@ -568,7 +568,7 @@ export default function ComputerRoom() {
             >
               <div className="relative">
                 <p className="w-full md:text-lg lg:text-xl text-center font-semibold text-white">
-                  {computerGameData.players[0].playerName}
+                  {computerGameData.players[0].playerName} &emsp;&emsp; Face : {computerGameData?.currentFace}
                 </p>
                 <img
                   src="/avatar.svg"
@@ -613,7 +613,7 @@ export default function ComputerRoom() {
             {computerGameData.turn === 0 && (
               computerGameData.players[0].cards.length === 0 ? (
                 <div
-                  className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end pb-3 bg-emerald-300 rounded-lg"
+                  className="col-span-12 md:col-span-5 row-span-1 flex justify-around items-end pb-3 md:bg-emerald-300 rounded-lg"
                   style={screenWidth <= 768 ? { gridColumnStart: 1, gridRowStart: 11 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 9 } : { gridColumnStart: 4, gridRowStart: 9 }}
                 >
                   <button
