@@ -327,7 +327,12 @@ export default function CustomRoom() {
                     <img src="/avatar.svg" alt="avatar" className="h-9 w-9 md:h-12 md:w-12 rounded-full" />
                   </div>
                   <p className="md:text-lg font-semibold">{player}</p>
-                  <div className={`absolute top-[100%] ${otherPlayerAnimate && otherPlayerName === player ? 'othercardanimation'  : 'hidden' }`}>
+                  <div className={`absolute top-[100%] ${otherPlayerAnimate && otherPlayerName === player ?
+                    playerPositions[index]?.colStart < 3 ? `transition-all transform translate-x-[15vw] md:translate-x-[25vw] translate-y-[20vh] lg:translate-y-[15vh] duration-200 ease-out`
+                      : playerPositions[index]?.colStart < 6 ? `transition-all transform translate-x-[0vw] lg:translate-x-[12vw] translate-y-[20vh] duration-200 ease-out` 
+                      : playerPositions[index]?.colStart < 9 ? `transition-all transform translate-x-[0vw] lg:translate-x-[-12vw] translate-y-[20vh] duration-200 ease-out` 
+                      : `transition-all transform translate-x-[-15vw] md:translate-x-[-25vw] translate-y-[20vh] lg:translate-y-[15vh] duration-200 ease-out`
+                      : 'translate-x-0 translate-y-0 opacity-0'}`}>
                      <ReverseCard key={"animate"} />
                   </div>
                   <div className="w-full flex space-x-1 md:space-x-2 lg:space-x-3 absolute top-[100%]">

@@ -17,7 +17,7 @@ export default function ComputerRoom() {
   const computerGameData = useSelector(state => state.computerGameData);
   const extraData = useSelector(state => state.extraGameData);
   const screenWidth = window.innerWidth;
-  console.log("computer game data" ,computerGameData)
+  console.log("computer game data", computerGameData)
   console.log(extraData);
 
   const [selectedCards, setSelectedCards] = useState([]);
@@ -27,8 +27,8 @@ export default function ComputerRoom() {
   const [ranking, setRanking] = useState(null);
   const [cheatComplete, setCheatCompelte] = useState(false);
   const [allThrownCards, setAllThrownCards] = useState([]);
-  const [otherPlayerAnimate , setOtherPlayerAnimate] = useState(false);
-  const [otherPlayerName , setOtherPlayerName] = useState("");
+  const [otherPlayerAnimate, setOtherPlayerAnimate] = useState(false);
+  const [otherPlayerName, setOtherPlayerName] = useState("");
   console.log('all thrown cards', allThrownCards)
 
   const decks = computerGameData.players.length === 3 ? 1 : computerGameData.players.length === 4 && computerGameData.players[0].cards === 13 ? 1 : 2;
@@ -48,13 +48,13 @@ export default function ComputerRoom() {
 
   async function handleFaceClick(face, index, selectedCards) {
     console.log(`Face chance played by player ${index}`);
-    if(index === 0){
+    if (index === 0) {
       setFaceCardAnimation(true);
-    }else{
+    } else {
       setOtherPlayerAnimate(true);
       setOtherPlayerName(computerGameData.players[index].playerName);
     }
-    
+
     const shuffledArr = shuffle(selectedCards);
     dispatch(setShuffleArr({ shuffledArr }));
     await delay(500);
@@ -93,9 +93,9 @@ export default function ComputerRoom() {
 
   async function throwHandler(index, selectedCards) {
     console.log(`Throw chance played by player ${index}`);
-    if(index === 0){
+    if (index === 0) {
       setFaceCardAnimation(true);
-    }else{
+    } else {
       setOtherPlayerAnimate(true);
       setOtherPlayerName(computerGameData.players[index].playerName);
     }
@@ -474,6 +474,8 @@ export default function ComputerRoom() {
     }, 3000)
   }, [computerGameData.turn, cheatComplete]);
 
+
+
   return (
     <div className="max-h-[100vh]">
       <div className="w-full bg-emerald-600 p-5">
@@ -499,7 +501,12 @@ export default function ComputerRoom() {
                     <img src="/avatar.svg" alt="avatar" className="h-9 w-9 md:h-12 md:w-12 rounded-full" />
                   </div>
                   <p className="md:text-lg font-semibold">{player.playerName}</p>
-                  <div className={`absolute top-[100%] ${otherPlayerAnimate && otherPlayerName === player.playerName ? 'othercardanimation'  : 'hidden' }`}>
+                  <div className={`absolute top-[100%] ${otherPlayerAnimate && otherPlayerName === player.playerName ?
+                    playerPositions[index]?.colStart < 3 ? `transition-all transform translate-x-[15vw] md:translate-x-[25vw] translate-y-[20vh] lg:translate-y-[15vh] duration-200 ease-out`
+                      : playerPositions[index]?.colStart < 6 ? `transition-all transform translate-x-[0vw] lg:translate-x-[12vw] translate-y-[20vh] duration-200 ease-out` 
+                      : playerPositions[index]?.colStart < 9 ? `transition-all transform translate-x-[0vw] lg:translate-x-[-12vw] translate-y-[20vh] duration-200 ease-out` 
+                      : `transition-all transform translate-x-[-15vw] md:translate-x-[-25vw] translate-y-[20vh] lg:translate-y-[15vh] duration-200 ease-out`
+                      : 'translate-x-0 translate-y-0 opacity-0'}`}>
                     <ReverseCard key={"animate"} />
                   </div>
                   <div className="w-full flex space-x-1 md:space-x-2 lg:space-x-3 absolute top-[100%]">
