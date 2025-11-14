@@ -8,7 +8,7 @@ import { shuffle } from 'lodash';
 import { getPlayerPositions } from '../constants/playerPositions';
 import { setPlayers, setTurn, setPrev, setSkip, setWon, setCurrentFace, setCardsInMiddle, setCardsInLastChance, } from '../../store/computerGameSlice';
 import { setShuffleArr } from '../../store/extraSlice';
-import RankCard2 from '../rankCard/rankCard2';
+import RankCard2 from '../rankCard/rankCard2'; 
 
 
 
@@ -366,16 +366,16 @@ export default function ComputerRoom() {
 
       let lieProbablity;
 
-      if(computerGameData.players.length === 3){
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
-      }else if(computerGameData.players.length === 4){
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
-      }else if(computerGameData.players.length === 5){
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
-      }else{
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
+      if (computerGameData.players.length === 3) {
+        lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
+      } else if (computerGameData.players.length === 4) {
+        lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
+      } else if (computerGameData.players.length === 5) {
+        lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
+      } else {
+        lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
       }
-      
+
 
       if (lieProbablity > 0.5) {
 
@@ -408,13 +408,13 @@ export default function ComputerRoom() {
     if (computerGameData.prev !== computerGameData.turn && computerGameData.prev !== null) {
       let cheatProb;
 
-      if(computerGameData.players.length === 3){
+      if (computerGameData.players.length === 3) {
         cheatProb = (0.5 * (computerGameData.cardsInMiddle.length / (totalCardsPerFace))) + (0.3 * (computerGameData.cardsInLastChance.length / 4));
-      }else if(computerGameData.players.length === 4){
+      } else if (computerGameData.players.length === 4) {
         cheatProb = (0.5 * (computerGameData.cardsInMiddle.length / (totalCardsPerFace))) + (0.3 * (computerGameData.cardsInLastChance.length / 4));
-      }else if(computerGameData.players.length === 5){
+      } else if (computerGameData.players.length === 5) {
         cheatProb = (0.3 * (computerGameData.cardsInMiddle.length / (totalCardsPerFace * 1.2))) + (0.4 * (computerGameData.cardsInLastChance.length / 4)) + (0.1 * Math.random());
-      }else{
+      } else {
         cheatProb = (0.3 * (computerGameData.cardsInMiddle.length / (totalCardsPerFace * 1.2))) + (0.4 * (computerGameData.cardsInLastChance.length / 4)) + (0.1 * Math.random());
       }
 
@@ -446,15 +446,15 @@ export default function ComputerRoom() {
 
     let lieProbablity;
 
-      if(computerGameData.players.length === 3){
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
-      }else if(computerGameData.players.length === 4){
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
-      }else if(computerGameData.players.length === 5){
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
-      }else{
-         lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
-      }
+    if (computerGameData.players.length === 3) {
+      lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
+    } else if (computerGameData.players.length === 4) {
+      lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace)))
+    } else if (computerGameData.players.length === 5) {
+      lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
+    } else {
+      lieProbablity = (0.3 * (cardsOfFaceInHand.length / totalCardsPerFace)) + (0.4 * (1 - (allThrownCardsOfFace.length / totalCardsPerFace))) + 0.1 * Math.random();
+    }
 
     console.log(`lie prob for ${computerGameData.players[index].playerName}`, lieProbablity);
 
@@ -466,7 +466,7 @@ export default function ComputerRoom() {
 
       console.log("lie card", lieCard)
 
-      if(lieFace === undefined || lieCard === undefined){
+      if (lieFace === undefined || lieCard === undefined) {
         if (cardsOfFaceInHand.length === 0) {
           skipChanceHandler(index);
           return;
@@ -544,10 +544,10 @@ export default function ComputerRoom() {
                   <p className="md:text-lg font-semibold">{player.playerName}</p>
                   <div className={`absolute top-[100%] ${otherPlayerAnimate && otherPlayerName === player.playerName ?
                     playerPositions[index]?.colStart < 3 ? `transition-all transform translate-x-[15vw] md:translate-x-[25vw] translate-y-[20vh] lg:translate-y-[15vh] duration-200 ease-out`
-                      : playerPositions[index]?.colStart < 6 ? `transition-all transform translate-x-[0vw] lg:translate-x-[12vw] translate-y-[20vh] duration-200 ease-out` 
-                      : playerPositions[index]?.colStart < 9 ? `transition-all transform translate-x-[0vw] lg:translate-x-[-12vw] translate-y-[20vh] duration-200 ease-out` 
-                      : `transition-all transform translate-x-[-15vw] md:translate-x-[-25vw] translate-y-[20vh] lg:translate-y-[15vh] duration-200 ease-out`
-                      : 'translate-x-0 translate-y-0 opacity-0'}`}>
+                      : playerPositions[index]?.colStart < 6 ? `transition-all transform translate-x-[0vw] lg:translate-x-[12vw] translate-y-[20vh] duration-200 ease-out`
+                        : playerPositions[index]?.colStart < 9 ? `transition-all transform translate-x-[0vw] lg:translate-x-[-12vw] translate-y-[20vh] duration-200 ease-out`
+                          : `transition-all transform translate-x-[-15vw] md:translate-x-[-25vw] translate-y-[20vh] lg:translate-y-[15vh] duration-200 ease-out`
+                    : 'translate-x-0 translate-y-0 opacity-0'}`}>
                     <ReverseCard key={"animate"} />
                   </div>
                   <div className="w-full flex space-x-1 md:space-x-2 lg:space-x-3 absolute top-[100%]">

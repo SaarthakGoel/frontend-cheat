@@ -380,6 +380,7 @@ export default function CustomRoom() {
 
 
             {/*Middle Section*/}
+            {started && 
             <div
               className="relative col-span-8 md:col-span-6 lg:col-span-3 row-span-2 w-full flex space-x-[5px] md:space-x-2 lg:space-x-3 ring-inset bg-emerald-500 py-8 px-2 shadow-inner"
               style={screenWidth <= 768 ? { gridColumnStart: 3, gridRowStart: 6 } : screenWidth <= 1024 ? { gridColumnStart: 4, gridRowStart: 4 } : { gridColumnStart: 5, gridRowStart: 4 }}
@@ -396,6 +397,7 @@ export default function CustomRoom() {
                   ))
               }
             </div>
+}
 
             {/* Action Buttons */}
             {gameData.turn === socket.id && (
